@@ -9,9 +9,8 @@ public class Person {
   private int id;
   private String name;
   private int age;
-  private String phone2;
+  private String phone;
   private String email;
   private String address;
-
 
 }

@@ -57,7 +57,7 @@ import org.apache.ibatis.type.JdbcType;
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
-  //是否已解析，XPath解析器,环境
+  /**是否已解析，XPath解析器,环境  */
   private boolean parsed;
   private final XPathParser parser;
   private String environment;
@@ -72,6 +72,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(reader, environment, null);
   }
 
+  //构造函数，转换成XPathParser再去调用构造函数
   public XMLConfigBuilder(Reader reader, String environment, Properties props) {
     this(new XPathParser(reader, true, props, new XMLMapperEntityResolver()), environment, props);
   }
@@ -97,11 +98,16 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.parser = parser;
   }
 
+  /**
+   * 解析mybatis的全局配置文件得到Configuration类（全局配置文件对应的配置类）
+   * @return
+   */
   public Configuration parse() {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    //解析全局配置文件
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
@@ -128,23 +134,36 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       // issue #117 read properties first
-      //先读取properties文件
+      //1.properties   先读取properties文件 然后替换成mybatis-config.xml中的值，
+                         //比如我可以读取jdbc.properties 文件，然后mybatis-config.xml的username、url、password等就可以通过这样取值的形式读取到properties中的值。
       propertiesElement(root.evalNode("properties"));
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
+      //2.类型别名
       typeAliasesElement(root.evalNode("typeAliases"));
+      //3.插件
       pluginElement(root.evalNode("plugins"));
+      //4.对象工厂
       objectFactoryElement(root.evalNode("objectFactory"));
+      //5.对象包装工厂
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+      //6.设置
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
-      //7.环境
+
+      //7.数据库环境
       environmentsElement(root.evalNode("environments"));
+
+      //8.databaseIdProvider
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      //9.类型处理器
       typeHandlerElement(root.evalNode("typeHandlers"));
+
+      //10.映射器
       mapperElement(root.evalNode("mappers"));
+
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
     }
@@ -309,6 +328,11 @@ public class XMLConfigBuilder extends BaseBuilder {
       </environment>
     </environments>
 */
+  /**
+   * 解析全局配置中的数据库环境
+   * @param context
+   * @throws Exception
+   */
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
@@ -316,7 +340,9 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
       for (XNode child : context.getChildren()) {
         String id = child.getStringAttribute("id");
+        //循环比较id是否就是指定的environment
         if (isSpecifiedEnvironment(id)) {
+          //事务管理器
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
 
           //获取DataSourceFactory
@@ -363,10 +389,25 @@ public class XMLConfigBuilder extends BaseBuilder {
     throw new BuilderException("Environment declaration requires a TransactionFactory.");
   }
 
+  /*
+      <dataSource type="POOLED">
+        <property name="driver" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/pumpkin?serverTimezone=UTC" />
+        <property name="username" value="root" />
+        <property name="password" value="123"/>
+      </dataSource>
+  * */
+  /**
+   * 获取数据源
+   * @param context
+   * @return
+   * @throws Exception
+   */
   private DataSourceFactory dataSourceElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type");
       Properties props = context.getChildrenAsProperties();
+      //根据type="POOLED"解析返回适当的DataSourceFactory
       DataSourceFactory factory = (DataSourceFactory) resolveClass(type).getDeclaredConstructor().newInstance();
       factory.setProperties(props);
       return factory;
@@ -428,8 +469,15 @@ public class XMLConfigBuilder extends BaseBuilder {
           <package name="org.mybatis.builder"/>
         </mappers>
   	*/
+
+  /**
+   * 将映射文件里面的sql标签
+    * @param parent
+   * @throws Exception
+   */
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      //for循环解析每一个<mapper class="org.mybatis.builder.AuthorMapper"/>标签
       for (XNode child : parent.getChildren()) {
         if ("package".equals(child.getName())) {
           //这个优先级最高： 自动扫描包下所有映射器
