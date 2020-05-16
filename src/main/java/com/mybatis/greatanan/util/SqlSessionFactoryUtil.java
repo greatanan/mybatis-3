@@ -1,4 +1,4 @@
-package com.mybatis.chen.util;
+package com.mybatis.greatanan.util;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;

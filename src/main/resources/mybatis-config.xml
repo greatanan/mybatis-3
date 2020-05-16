@@ -6,7 +6,7 @@
 <configuration>
 
   <typeAliases>
-    <package name="com.mybatis.chen.model"/>
+    <package name="com.mybatis.greatanan.model"/>
   </typeAliases>
 
   <environments default="development">
@@ -22,7 +22,7 @@
   </environments>
 
   <mappers>
-    <mapper resource="com/mybatis/chen/mapper/PersonMapper.xml"/>
+    <mapper resource="mapper/PersonMapper.xml"/>
   </mappers>
 
 </configuration>

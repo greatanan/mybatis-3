@@ -1,6 +1,6 @@
-package com.mybatis.chen.dao;
+package com.mybatis.greatanan.dao;
 
-import com.mybatis.chen.model.Person;
+import com.mybatis.greatanan.model.Person;
 import org.apache.ibatis.annotations.Param;
 
 public interface PersonDao {

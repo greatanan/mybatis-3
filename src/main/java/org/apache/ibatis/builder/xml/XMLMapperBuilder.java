@@ -90,6 +90,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     this.resource = resource;
   }
 
+  //解析xml文件里面的内容
   public void parse() {
     if (!configuration.isResourceLoaded(resource)) {
       configurationElement(parser.evalNode("/mapper"));
@@ -106,6 +107,18 @@ public class XMLMapperBuilder extends BaseBuilder {
     return sqlFragments.get(refid);
   }
 
+    /*
+    <mapper namespace="com.mybatis.chen.dao.PersonDao">
+      <insert keyProperty="id" parameterType="Person" useGeneratedKeys="true" id="insert">
+        INSERT INTO person (name, age, phone, email, address)
+        VALUES(#{name},#{age},#{phone},#{email},#{address})
+      </insert>
+     <select resultType="com.mybatis.chen.model.Person" id="select">
+      select * from person where id = #{id}
+      </select>
+    </mapper>
+    */
+  //解析配置的标签
   private void configurationElement(XNode context) {
     try {
       String namespace = context.getStringAttribute("namespace");
@@ -130,7 +143,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
     buildStatementFromContext(list, null);
   }
-
+  //将所有的sql标签都封装成一个个对象
   private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
     for (XNode context : list) {
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);

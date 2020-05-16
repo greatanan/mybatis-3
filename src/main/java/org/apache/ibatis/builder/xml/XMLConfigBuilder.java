@@ -51,13 +51,19 @@ import org.apache.ibatis.type.JdbcType;
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
+/**
+ * XML配置构建器，建造者模式,继承BaseBuilder
+ *
+ */
 public class XMLConfigBuilder extends BaseBuilder {
 
+  //是否已解析，XPath解析器,环境
   private boolean parsed;
   private final XPathParser parser;
   private String environment;
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
 
+  //以下3个一组
   public XMLConfigBuilder(Reader reader) {
     this(reader, null, null);
   }
@@ -99,10 +105,30 @@ public class XMLConfigBuilder extends BaseBuilder {
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
-
+               //下面方法parseConfiguration的参数XNode 其实就是我们mybatis全局配置文件里面的内容
+              /*<configuration>
+                  <typeAliases>
+                      <package name="com.mybatis.chen.model"/>
+                  </typeAliases>
+                  <environments default="development">
+                      <environment id="development">
+                          <transactionManager type="JDBC"/>
+                          <dataSource type="POOLED">
+                              <property name="driver" value="com.mysql.jdbc.Driver"/>
+                              <property name="url" value="jdbc:mysql://localhost:3306/pumpkin?serverTimezone=UTC"/>
+                              <property name="username" value="root"/>
+                              <property name="password" value="123"/>
+                          </dataSource>
+                      </environment>
+                  </environments>
+                  <mappers>
+                      <mapper resource="com/mybatis/chen/mapper/PersonMapper.xml"/>
+                  </mappers>
+              </configuration>*/
   private void parseConfiguration(XNode root) {
     try {
       // issue #117 read properties first
+      //先读取properties文件
       propertiesElement(root.evalNode("properties"));
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
@@ -114,6 +140,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      //7.环境
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       typeHandlerElement(root.evalNode("typeHandlers"));
@@ -270,6 +297,18 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setConfigurationFactory(resolveClass(props.getProperty("configurationFactory")));
   }
 
+  /*<environments default="development">
+      <environment id="development">
+          <transactionManager type="JDBC"/>
+          <dataSource type="POOLED">
+              <property name="driver" value="com.mysql.jdbc.Driver"/>
+              <property name="url" value="jdbc:mysql://localhost:3306/pumpkin?serverTimezone=UTC"/>
+              <property name="username" value="root"/>
+              <property name="password" value="123"/>
+          </dataSource>
+      </environment>
+    </environments>
+*/
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
@@ -279,8 +318,12 @@ public class XMLConfigBuilder extends BaseBuilder {
         String id = child.getStringAttribute("id");
         if (isSpecifiedEnvironment(id)) {
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
+
+          //获取DataSourceFactory
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
+          //获取DataSource
           DataSource dataSource = dsFactory.getDataSource();
+
           Environment.Builder environmentBuilder = new Environment.Builder(id)
               .transactionFactory(txFactory)
               .dataSource(dataSource);
@@ -357,17 +400,47 @@ public class XMLConfigBuilder extends BaseBuilder {
       }
     }
   }
+   /* 10.映射器
+    mybatis加载mappers文件的4种方式：
+        10.1使用类路径
+        <mappers>
+          <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+          <mapper resource="org/mybatis/builder/BlogMapper.xml"/>
+          <mapper resource="org/mybatis/builder/PostMapper.xml"/>
+        </mappers>
 
+        10.2使用绝对url路径
+        <mappers>
+          <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+          <mapper url="file:///var/mappers/BlogMapper.xml"/>
+          <mapper url="file:///var/mappers/PostMapper.xml"/>
+        </mappers>
+
+        10.3使用java类名
+        <mappers>
+          <mapper class="org.mybatis.builder.AuthorMapper"/>
+          <mapper class="org.mybatis.builder.BlogMapper"/>
+          <mapper class="org.mybatis.builder.PostMapper"/>
+        </mappers>
+
+        10.4自动扫描包下所有映射器
+        <mappers>
+          <package name="org.mybatis.builder"/>
+        </mappers>
+  	*/
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
         if ("package".equals(child.getName())) {
+          //这个优先级最高： 自动扫描包下所有映射器
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
         } else {
+
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
+
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             InputStream inputStream = Resources.getResourceAsStream(resource);

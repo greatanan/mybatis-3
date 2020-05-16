@@ -1,8 +1,8 @@
-package com.mybatis.chen;
+package com.mybatis.greatanan;
 
-import com.mybatis.chen.dao.PersonDao;
-import com.mybatis.chen.model.Person;
-import com.mybatis.chen.util.SqlSessionFactoryUtil;
+import com.mybatis.greatanan.dao.PersonDao;
+import com.mybatis.greatanan.model.Person;
+import com.mybatis.greatanan.util.SqlSessionFactoryUtil;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class TestFactory {
     PersonDao personDao =  sqlSession.getMapper(PersonDao.class);
 
     Person p = new Person();
-    p.setAddress("广东省").setAge(12).setEmail("157538651@qq.com").setName("chen").setPhone("15345634565");
+    p.setAddress("上海市").setAge(12).setEmail("guochuanlei@163.com").setName("greatanan").setPhone2("66666666666");
 
     personDao.insert(p);
     System.out.println(p.toString());
@@ -30,8 +30,12 @@ public class TestFactory {
   public void selectTest(){
     SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
     SqlSession sqlSession = sqlSessionFactory.openSession();
+
     PersonDao personDao =  sqlSession.getMapper(PersonDao.class);
-    Person person = personDao.select(4L);
+    Person person = personDao.select(5L);
+
+//    Person person = sqlSession.selectOne("com.mybatis.chen.dao.PersonDao.select", 5L);
+
     System.out.println(person);
     sqlSession.commit();
     sqlSession.close();

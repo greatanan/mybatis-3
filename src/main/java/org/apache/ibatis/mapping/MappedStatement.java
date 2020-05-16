@@ -31,10 +31,25 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Clinton Begin
  */
+
+/**
+ * 封装对象：
+ *    作用：对操作数据库存储封装，包括sql语句，输入输出参数
+ */
+
+/*
+<select id="select" resultType="com.mybatis.chen.model.Person">
+  select * from person where id = #{id}
+</select>
+*/
+//和我们一个sql标签进行对应
 public final class MappedStatement {
 
   private String resource;
+
+  /** 每一个MappedStatement都存一个Configuration属性 */
   private Configuration configuration;
+
   private String id;
   private Integer fetchSize;
   private Integer timeout;

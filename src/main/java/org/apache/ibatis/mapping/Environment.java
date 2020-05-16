@@ -22,9 +22,17 @@ import org.apache.ibatis.transaction.TransactionFactory;
 /**
  * @author Clinton Begin
  */
+/**
+ * 其实就是对应我们mybatis全局配置文件里面的environment标签（也就是说这个标签对应了这一个类）
+ * 环境
+ * 决定加载哪种环境(开发环境/生产环境)
+ */
 public final class Environment {
+  //环境id
   private final String id;
+  //事务工厂
   private final TransactionFactory transactionFactory;
+  //数据源
   private final DataSource dataSource;
 
   public Environment(String id, TransactionFactory transactionFactory, DataSource dataSource) {
@@ -42,6 +50,9 @@ public final class Environment {
     this.dataSource = dataSource;
   }
 
+  //一个静态内部类Builder
+  //建造模式
+  //用法应该是new Environment.Builder(id).transactionFactory(xx).dataSource(xx).build();
   public static class Builder {
     private final String id;
     private TransactionFactory transactionFactory;

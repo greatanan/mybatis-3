@@ -1,4 +1,4 @@
-package com.mybatis.chen.model;
+package com.mybatis.greatanan.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -9,7 +9,7 @@ public class Person {
   private int id;
   private String name;
   private int age;
-  private String phone;
+  private String phone2;
   private String email;
   private String address;
 
