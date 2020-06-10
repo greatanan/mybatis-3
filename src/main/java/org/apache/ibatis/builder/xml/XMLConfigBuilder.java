@@ -53,7 +53,8 @@ import org.apache.ibatis.type.JdbcType;
  */
 /**
  * XML配置构建器，建造者模式,继承BaseBuilder
- *
+ * XMLConfigBuilder 是 BaseBuilder 的众多子类之一，它扮演的是具体建造者的角色。
+ * XMLConfigBuilder 主要负责解析 mybatis-config.xml 配置文件
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
@@ -97,11 +98,16 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.parser = parser;
   }
 
+  /**
+   * //mynote: 该商法是解析核心配置文件的入口 通过调用parseConfiguration方法实现整个解析过程0
+   * @return
+   */
   public Configuration parse() {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    //在核心配置文件中找到<configuration>节点，并开始解析
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
@@ -144,6 +150,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       typeHandlerElement(root.evalNode("typeHandlers"));
+      //mynote: 解析<mapper>节点 也就是配置映射文件的节点
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -444,7 +451,9 @@ public class XMLConfigBuilder extends BaseBuilder {
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             InputStream inputStream = Resources.getResourceAsStream(resource);
+            //XMLMapperBuilder负责解析映射配置文件
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
+            //开始解析
             mapperParser.parse();
           } else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);

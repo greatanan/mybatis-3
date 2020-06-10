@@ -154,8 +154,10 @@ public class Configuration {
 
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
   protected final InterceptorChain interceptorChain = new InterceptorChain();
+
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
   //这个map是存放我们的sql语句对应的MappedStatement

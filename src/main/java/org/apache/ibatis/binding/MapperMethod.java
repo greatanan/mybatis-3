@@ -26,7 +26,9 @@ import java.util.Optional;
 
 import org.apache.ibatis.annotations.Flush;
 import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.jdbc.SQL;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.mapping.StatementType;
@@ -43,22 +45,38 @@ import org.apache.ibatis.session.SqlSession;
  * @author Eduardo Macarron
  * @author Lasse Voss
  * @author Kazuki Shimizu
+ * //mynote: MapperMethod 中封装了 Mapper 接口中对应方法的信息，以及对应 SQL 语句的信息。读者
+ *           可以将 MapperMethod 看作连接 Mapper 接口以及映射配置文件中定义的 SQL 语句的桥梁。
  */
 public class MapperMethod {
 
-  private final SqlCommand command;
-  private final MethodSignature method;
+  private final SqlCommand command;//记录了 SQL 语句的名称和类型
+
+  private final MethodSignature method;//Mapper 接口中对应方法的相关信息
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
     this.command = new SqlCommand(config, mapperInterface, method);
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * MapperMethod 中
+   * 最核心的方法是 execute（）方法，它会根据 SQL 语句的类型调用 SqISession 对应的方法完成数据库操作
+   * @param sqlSession
+   * @param args
+   * @return
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
-    switch (command.getType()) {
+    switch (command.getType()) {//根据 SQL 语句的类型调用 SqlSession 对应的方法
       case INSERT: {
+        //使用 ParamNameResolver 处理 args ［］数组（用户传入的实参列表），将用户传入的 实参与
+        //指定参数名称关联起来
         Object param = method.convertArgsToSqlCommandParam(args);
+        //调用 SqlSession .insert （）方法， rowCountResult （）方法会根据 method 字段中记录的方法的返回值类型对结果进行转换
+       /* 当执行 INSERT 、 UPDATE 、 DELETE 类型的 SQL 语句时，其执行结果都需要经过
+        MapperMethod.rowCountResult（） 方法处理。 SqISession 中的 insert（）等方法返回的是 int 值，
+        rowCountResult（）方法会将该 int 值转换成 Mapper 接口中对应方法的返回值*/
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
       }
@@ -216,11 +234,18 @@ public class MapperMethod {
 
   }
 
+  /*
+  * SqlCommand 是 MapperMethod 中 定义的内部类，它使用 name 字段记录了 SQL 语句的名称，
+    使用 type 宇段（ SqlCommandType 类型）记录了 SQL 语句的类型。 SqlCommandType 是枚举类
+    型，有效取值为 UNKNOWN 、 INSERT、 UPDATE 、 DELETE 、 SELECT 、 FLUSH
+* */
   public static class SqlCommand {
 
     private final String name;
+
     private final SqlCommandType type;
 
+    //SqICommand 的构造方法会初始化 name 字段和 type 字段
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
@@ -253,6 +278,7 @@ public class MapperMethod {
 
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
         Class<?> declaringClass, Configuration configuration) {
+//      SQL 语句的名称是由 Mapper 接口的名称与对应的方法名称组成的
       String statementId = mapperInterface.getName() + "." + methodName;
       if (configuration.hasStatement(statementId)) {
         return configuration.getMappedStatement(statementId);

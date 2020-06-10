@@ -293,8 +293,8 @@ public class MapperBuilderAssistant extends BaseBuilder {
       statementBuilder.parameterMap(statementParameterMap);
     }
 
-    MappedStatement statement = statementBuilder.build();
-    configuration.addMappedStatement(statement); //将sql语句的MappedStatement对象加入map中
+    MappedStatement statement = statementBuilder.build();//mynote: 一个MappedStatement就是我们的一个sql  sql存在MappedStatement里面的SqlSource属性中
+    configuration.addMappedStatement(statement); //将sql语句的MappedStatement对象加入Configuration的一个map中
     return statement;
   }
 

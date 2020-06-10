@@ -46,11 +46,11 @@ import org.xml.sax.SAXParseException;
  */
 public class XPathParser {
 
-  private final Document document;
-  private boolean validation;
-  private EntityResolver entityResolver;
-  private Properties variables;
-  private XPath xpath;
+  private final Document document;//mynote  Document 对象
+  private boolean validation;//mynote 是否开启验证
+  private EntityResolver entityResolver;//mynote 用于加载本地 DT D 文件
+  private Properties variables;//mynote mybatis -c onfi g. xml 中 ＜ p rop ter i es ＞标签定义的键位对集合
+  private XPath xpath;//mynote XPath对象
 
   public XPathParser(String xml) {
     commonConstructor(false, null, null);
@@ -227,19 +227,25 @@ public class XPathParser {
     }
   }
 
+  /**
+   * //mynote: 从XML得到Document
+   * 调用 createOocument （）方法之前一定要先调用 commonConstructor （）方法完成初始化
+   * @param inputSource
+   * @return
+   */
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
+      //mynote: 创建DocumentBuilderFactory
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       factory.setValidating(validation);
-
       factory.setNamespaceAware(false);
       factory.setIgnoringComments(true);
       factory.setIgnoringElementContentWhitespace(false);
       factory.setCoalescing(false);
       factory.setExpandEntityReferences(true);
-
+      //mynote: 创建DocumentBuilder
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setEntityResolver(entityResolver);
       builder.setErrorHandler(new ErrorHandler() {
@@ -258,6 +264,7 @@ public class XPathParser {
           // NOP
         }
       });
+      //mynote: 加载xml文件
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);

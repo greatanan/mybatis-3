@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.ibatis.annotations.One;
 import org.apache.ibatis.mapping.ParameterMode;
 import org.apache.ibatis.mapping.ResultSetType;
 import org.apache.ibatis.session.Configuration;
@@ -30,9 +31,18 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ *
+ * //mynote: MyBatis 的初始化过程使用了建造者模式，这里的 BaseBuilder 抽象类就扮
+ *           演着建造者接口 的角色
  */
 public abstract class BaseBuilder {
+
+
+/*  Configuration 是 MyBatis 初始化过程的核心对象， MyBatis 中几乎全部的配置信息会保存到
+   Configuration 对象中 。 Configuration 对象是在 MyBatis 初始化过程中创建且是全局唯一的，
+    也有人称它是一个“All-In-One”配置对象*/
   protected final Configuration configuration;
+  /*在 mybatis-config . xml 配置文件中可以使用＜ typeAliases ＞标签定义别名，这些定义的别名都会记录在该TypeAliasRegistry 对象中*/
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
 

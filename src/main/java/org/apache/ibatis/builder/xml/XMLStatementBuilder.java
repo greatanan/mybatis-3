@@ -35,11 +35,12 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ * XMLStatementBuilder是用来解析sql标签的
  */
 public class XMLStatementBuilder extends BaseBuilder {
 
   private final MapperBuilderAssistant builderAssistant;
-  private final XNode context;
+  private final XNode context;//则是我们的一个sql标签的内容
   private final String requiredDatabaseId;
 
   public XMLStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, XNode context) {
@@ -53,7 +54,10 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
-  public void parseStatementNode() {  //将每一个sql语句对应的标签封装成对象
+  /**
+   * //mynote: 将每一个sql语句对应的标签封装成对象
+   */
+  public void parseStatementNode() {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
 

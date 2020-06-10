@@ -29,6 +29,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * @author Clinton Begin
+ * //mynote: 对org.w3c.dom . Node 对象做了封装和解析
  */
 public class XNode {
 
@@ -37,7 +38,7 @@ public class XNode {
   private final String body;
   private final Properties attributes;
   private final Properties variables;
-  private final XPathParser xpathParser;
+  private final XPathParser xpathParser;//mynote: 该 XNode 对象由此 XPathParser 对象生成
 
   public XNode(XPathParser xpathParser, Node node, Properties variables) {
     this.xpathParser = xpathParser;

@@ -32,6 +32,10 @@ import org.apache.ibatis.session.SqlSession;
 /**
  * @author Clinton Begin
  * @author Eduardo Macarron
+ *
+ * //mynote:
+ * 我们通过这种方式：PersonDao personDao = sqlSession.getMapper(PersonDao.class);
+ *                获取到的personDao就是一个MapperProxy 它是一个代理对象
  */
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
@@ -40,6 +44,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
       | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
   private static final Constructor<Lookup> lookupConstructor;
   private static final Method privateLookupInMethod;
+
   private final SqlSession sqlSession;
   private final Class<T> mapperInterface;
   private final Map<Method, MapperMethodInvoker> methodCache;

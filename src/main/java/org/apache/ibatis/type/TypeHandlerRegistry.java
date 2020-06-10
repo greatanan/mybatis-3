@@ -51,14 +51,24 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ * //mynote: 介绍完 TypeHandler 接口及其功能之后 ， MyBatis 如何管理众多的 TypeHandler 接口实现，如何
+ *           知道何时使用哪个 TypeHandler 接口实现完成转换呢？
+ *
+ *           在 MyBatis 初始化过程中，会为所有己知的 TypeHandler 创建对象，并实现注册到
+ *           TypeHandlerRegistry 中，由 TypeHandlerRegis盯F 负责管理这些 TypeHandler 对象。
  */
 public final class TypeHandlerRegistry {
 
+//   记录 JdbcType 与 TypeHandler 之间的对应关系，其中 Jdb cType 是一个枚举类型，它定义对应的 J DBC 类型
+//  该集合主要用于从结果集读取数据时，将数据从 Jdbc 类型转换成 Java 类型
   private final Map<JdbcType, TypeHandler<?>>  jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
+//  记录了 Java 类型向指定 JdbcType 转换时，需妥使用的 Type Handler 对象。 例如： Java 类型中的 String 可能
+//／／转换成数据库的 ch ar 、 varchar 等多种类型，所以存在一对多关系
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
   private final TypeHandler<Object> unknownTypeHandler;
+  //记录了全部 TypeHandler 的类型以及该类型相应的 T ypeHandler 对象
   private final Map<Class<?>, TypeHandler<?>> allTypeHandlersMap = new HashMap<>();
-
+//空 TypeHandler 集合的标识
   private static final Map<JdbcType, TypeHandler<?>> NULL_TYPE_HANDLER_MAP = Collections.emptyMap();
 
   private Class<? extends TypeHandler> defaultEnumTypeHandler = EnumTypeHandler.class;
@@ -75,6 +85,9 @@ public final class TypeHandlerRegistry {
    *
    * @param configuration a MyBatis configuration
    * @since 3.5.4
+   *
+   * 最后来看 TypeHandlerRegistry 构造方法 ， 会通过上述 register（）方法为很多基础类型注册对
+   * 应的 TypeHandler 对象
    */
   public TypeHandlerRegistry(Configuration configuration) {
     this.unknownTypeHandler = new UnknownTypeHandler(configuration);
@@ -208,7 +221,10 @@ public final class TypeHandlerRegistry {
   public TypeHandler<?> getMappingTypeHandler(Class<? extends TypeHandler<?>> handlerType) {
     return allTypeHandlersMap.get(handlerType);
   }
-
+/*
+* 介绍完注册 乃peHandler 对象的功能之后，再来介绍 TypeHandlerRegis町 提供的查找
+TypeHandler 对象的功能。 TypeHandlerRegistry.getTypeHandler（）方法实现 了 从上述 四个集合中获
+取对应 TypeHandler 对象的功能。 TypeHandlerRegistry.getTypeHandler（）方法有多个重载 */
   public <T> TypeHandler<T> getTypeHandler(Class<T> type) {
     return getTypeHandler((Type) type, null);
   }
@@ -229,20 +245,25 @@ public final class TypeHandlerRegistry {
     return getTypeHandler(javaTypeReference.getRawType(), jdbcType);
   }
 
+    /*经过一系列类型转换之后 ， TypeHandlerRegistry.getTypeHandler（）方法的多个重载都会调用
+  TypeHandlerReg i stry. getTypeHandle(Type,JdbcType）这个重载方法 ， 它会根据指定 的 Java 类型和
+  JdbcType 类型查找相应的 TypeHandler 对象*/
   @SuppressWarnings("unchecked")
   private <T> TypeHandler<T> getTypeHandler(Type type, JdbcType jdbcType) {
     if (ParamMap.class.equals(type)) {
       return null;
     }
+//    查找（或初始化） Java 类型对应的 TypeHandler 集合
     Map<JdbcType, TypeHandler<?>> jdbcHandlerMap = getJdbcHandlerMap(type);
     TypeHandler<?> handler = null;
     if (jdbcHandlerMap != null) {
+//      根据 JdbcType 类型查找 TypeHandler 对象
       handler = jdbcHandlerMap.get(jdbcType);
       if (handler == null) {
         handler = jdbcHandlerMap.get(null);
       }
       if (handler == null) {
-        // #591
+        // #591 如果 j dbcHandlerMap 只注册了一个 Type Handler ，则使用此 TypeHandler 对象
         handler = pickSoleHandler(jdbcHandlerMap);
       }
     }
@@ -405,7 +426,8 @@ public final class TypeHandlerRegistry {
   //
 
   // Only handler type
-
+/*TypeHandlerRegistry.register（）方法实现了注册 TypeHandler 对象的功能， 该注册过程会向上
+述四个集合中添加 TypeHandler 对象*/
   public void register(Class<?> typeHandlerClass) {
     boolean mappedTypeFound = false;
     MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);

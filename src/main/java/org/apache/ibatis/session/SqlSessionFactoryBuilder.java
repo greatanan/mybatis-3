@@ -44,12 +44,20 @@ public class SqlSessionFactoryBuilder {
     return build(reader, null, properties);
   }
 
+  /**
+   * //mynote: mybatis的初始化入口
+   * @param reader
+   * @param environment
+   * @param properties
+   * @return
+   */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
+      //mynote: 读取配置文件
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
-      //解析配置文件
+      //解析配置文件得到Configuration对象  XMLConfigBuilder解析mybatis的核心配置文件
       Configuration configuration = parser.parse();
-      //获取SqlSessionFactory
+      //获取SqlSessionFactory    创建DefaultSqlSessionFactory 对象
       SqlSessionFactory sessionFactory = build(configuration);
       return sessionFactory;
     } catch (Exception e) {

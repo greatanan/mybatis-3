@@ -20,9 +20,9 @@ package org.apache.ibatis.parsing;
  */
 public class GenericTokenParser {
 
-  private final String openToken;
-  private final String closeToken;
-  private final TokenHandler handler;
+  private final String openToken; //mynote: 占 位符的开始标记
+  private final String closeToken;//mynote:  占位符的 结束标记
+  private final TokenHandler handler;//mynote: TokenHandler 接口的 实现会按照一定的逻辑解析 占 位符
 
   public GenericTokenParser(String openToken, String closeToken, TokenHandler handler) {
     this.openToken = openToken;
@@ -74,6 +74,8 @@ public class GenericTokenParser {
           builder.append(src, start, src.length - start);
           offset = src.length;
         } else {
+          //将占位符的字面值交给 TokenHandler 处理，并将处理结果追加到 builder 中保存 ，
+          //最终拼凑出解析后的完整内容
           builder.append(handler.handleToken(expression.toString()));
           offset = end + closeToken.length();
         }

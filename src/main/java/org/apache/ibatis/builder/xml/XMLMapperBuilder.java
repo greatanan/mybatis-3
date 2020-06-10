@@ -52,6 +52,9 @@ import org.apache.ibatis.type.TypeHandler;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * //mynote: XMLMapperBuilder 负责
+ *           解析映射配置文件，它继承了 BaseBuilder 抽 象类，也是具体建造者 的角色
  */
 public class XMLMapperBuilder extends BaseBuilder {
 
@@ -92,8 +95,11 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   //解析xml文件里面的内容
   public void parse() {
+    //mynote: 判断是否加载过该映射文件
     if (!configuration.isResourceLoaded(resource)) {
+      //解析配置的标签
       configurationElement(parser.evalNode("/mapper"));
+      //将resource添加到loadedResources集合中 记录已经加载过得映射文件
       configuration.addLoadedResource(resource);
       bindMapperForNamespace();
     }
@@ -130,14 +136,16 @@ public class XMLMapperBuilder extends BaseBuilder {
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      //mynote: sqlElement 负责解析映射配置文件中定义的全部＜sql＞节点
       sqlElement(context.evalNodes("/mapper/sql"));
+      //将所有的sql标签都封装成一个个对象
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
   }
 
-  private void buildStatementFromContext(List<XNode> list) {
+  private void buildStatementFromContext(List<XNode> list) {//这里的list就是我们一个一个的sql标签  未经过处理的sql标签
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }
@@ -428,11 +436,14 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  //mynote: 将映射文件和对应的Mapper接口进行绑定
   private void bindMapperForNamespace() {
+    //mynote: 获取命名空间
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
       Class<?> boundType = null;
       try {
+        //mynote: 解析命名空间对应的类型
         boundType = Resources.classForName(namespace);
       } catch (ClassNotFoundException e) {
         // ignore, bound type is not required
@@ -441,7 +452,9 @@ public class XMLMapperBuilder extends BaseBuilder {
         // Spring may not know the real resource name so we set a flag
         // to prevent loading again this resource from the mapper interface
         // look at MapperAnnotationBuilder#loadXmlResource
+        //mynote: 追加namespace前缀 并添加到loadedResources集合中
         configuration.addLoadedResource("namespace:" + namespace);
+        //mynote: 调用MapperRegistry.addMapper()方法 注册boundType
         configuration.addMapper(boundType);
       }
     }
