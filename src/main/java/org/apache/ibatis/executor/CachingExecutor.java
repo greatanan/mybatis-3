@@ -35,6 +35,8 @@ import org.apache.ibatis.transaction.Transaction;
 /**
  * @author Clinton Begin
  * @author Eduardo Macarron
+ *
+ * //mynote: CachingExecutor 是一个 Executor 接口的装饰器，它为 Executor 对象增加了二级缓存的相关功能 。
  */
 public class CachingExecutor implements Executor {
 
@@ -85,7 +87,7 @@ public class CachingExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
     //select * from person where id = ?
-    BoundSql boundSql = ms.getBoundSql(parameterObject);
+    BoundSql boundSql = ms.getBoundSql(parameterObject);//mynote: 通过MappedStatement获取 BoundSql
     CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
     return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }

@@ -25,6 +25,7 @@ import org.apache.ibatis.session.SqlSession;
 
 /**
  * @author Lasse Voss
+ * //mynote: MapperProxyFactory 主要负责创建代理对象
  */
 public class MapperProxyFactory<T> {
 
@@ -49,6 +50,9 @@ public class MapperProxyFactory<T> {
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
   }
 
+  /**
+   * MapperProxyFactory. newlnstance（）方法实现了创建实现了 mapperInterface 接口的代理对象
+   */
   public T newInstance(SqlSession sqlSession) {
     final MapperProxy<T> mapperProxy = new MapperProxy<>(sqlSession, mapperInterface, methodCache);
     return newInstance(mapperProxy);

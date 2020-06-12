@@ -294,7 +294,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
 
     MappedStatement statement = statementBuilder.build();//mynote: 一个MappedStatement就是我们的一个sql  sql存在MappedStatement里面的SqlSource属性中
-    configuration.addMappedStatement(statement); //将sql语句的MappedStatement对象加入Configuration的一个map中
+    configuration.addMappedStatement(statement); //将sql语句的MappedStatement对象加入Configuration的mappedStatements中
     return statement;
   }
 

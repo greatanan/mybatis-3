@@ -40,14 +40,23 @@ import org.apache.ibatis.session.SqlSession;
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private static final long serialVersionUID = -4724728412955527868L;
+
+  /** 记录 了 关联的 SqlSession 对象 */
+  private final SqlSession sqlSession;
+
+  /** Mapper 接 口 对应的 Class 对象 */
+  private final Class<T> mapperInterface;
+
+  private final Map<Method, MapperMethodInvoker> methodCache;
+
+
+
   private static final int ALLOWED_MODES = MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
       | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
   private static final Constructor<Lookup> lookupConstructor;
   private static final Method privateLookupInMethod;
 
-  private final SqlSession sqlSession;
-  private final Class<T> mapperInterface;
-  private final Map<Method, MapperMethodInvoker> methodCache;
+
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethodInvoker> methodCache) {
     this.sqlSession = sqlSession;
@@ -81,12 +90,18 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     lookupConstructor = lookup;
   }
 
+  /**
+   * MapperProxy. invokeO方法是代理对象执行的主要逻辑
+
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
       } else {
+        //从缓存中获取 MapperMethodInvoker 对象，如采缓存 中没有，则创建新的 MapperMethodInvoker 对象并添加到缓存中
+        //调用MapperMethodInvoker的invoke方法
         return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
       }
     } catch (Throwable t) {
@@ -94,8 +109,15 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
   }
 
+  /**
+   * MapperProxy.cachedInvoker（）方法主要负责维护 methodCache 这个缓存集合
+   * @param method
+   * @return
+   * @throws Throwable
+   */
   private MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
     try {
+      //computeIfAbsent 若key对应的value为空，会将第二个参数的返回值存入并返回
       return methodCache.computeIfAbsent(method, m -> {
         if (m.isDefault()) {
           try {
@@ -137,6 +159,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   }
 
   private static class PlainMethodInvoker implements MapperMethodInvoker {
+
     private final MapperMethod mapperMethod;
 
     public PlainMethodInvoker(MapperMethod mapperMethod) {

@@ -39,6 +39,7 @@ public class TestFactory {
 
 //    Person person = sqlSession.selectOne("com.mybatis.chen.dao.PersonDao.select", 5L);
     System.out.println(person);
+    Person person2 = personDao.select(5L);
     sqlSession.commit();
     sqlSession.close();
   }

@@ -46,17 +46,27 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ *
+ * //mynote: BaseExecutor 是一个实现了 Executor 接口的抽象类 ，它实现了 Executor 接口的大部分方法，
+ *           其中就使用了模板方法模式。
+ *           BaseExecutor 中主要提供了缓存管理和事务管理的基本功能，继
+ *           承 BaseExecutor 的子类只要实现四个基本方法来完成数据库的相关操作即可，这四个方法分别
+ *           是 ： doUpdate（）方法、 doQue可（）方法、 doQueryCursor（）方法、 doFlushStatement（）方法，其余的功
+ *           能在 BaseExecutor 中实现。
  */
 public abstract class BaseExecutor implements Executor {
 
   private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
   protected Transaction transaction;
+
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+
   protected PerpetualCache localCache;
   protected PerpetualCache localOutputParameterCache;
+
   protected Configuration configuration;
 
   protected int queryStack;
@@ -113,6 +123,7 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    //mynote: 清空以及缓存
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
@@ -132,10 +143,16 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
     BoundSql boundSql = ms.getBoundSql(parameter);
+    //创建 CacheKey 对象
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
+    //调用 query （）的另一个重载，继续后续处理
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
   }
 
+  /*根据前面创建的
+  CacheKey 对象查询一级缓存，如果缓存命中则将缓存中记录的结果对象返回，如果缓存未命中，
+  则调用 doQuery（）方法完成数据库的查询操作并得到结果对象，之后将结果对象记录到一级缓存
+  中*/
   @SuppressWarnings("unchecked")
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
@@ -149,13 +166,12 @@ public abstract class BaseExecutor implements Executor {
     List<E> list;
     try {
       queryStack++;
-      //通过key到缓存在那个获取
+      //通过key到以及缓存中查询
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
-        //去一级缓存中获取
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
-        //缓存中取不到则调用去数据库查询的方法
+        //缓存中取不到则调用去数据库查询的方法    查询出来以后会把数据放到以及缓存中
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
@@ -196,6 +212,9 @@ public abstract class BaseExecutor implements Executor {
 
   /**
    * 创建缓存
+   *
+   * 可以清晰地看到，该 CacheKey 对象由 MappedStatement 的 id、对应的 offset 和 limit、 SQL
+   * 语句（包含“？”占位符）、用户传递的实参以及 Environment 的 id 这五部分构成 。
    * @param ms
    * @param parameterObject
    * @param rowBounds
@@ -207,16 +226,23 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    //创建 CacheKey 对象
     CacheKey cacheKey = new CacheKey();
     //下面这四个组成key
+
+    //将 MappedStatement 的 id 添加到 Cache Key 对象 中
     cacheKey.update(ms.getId());
+    //将 off set 添加到 CacheKey 对象中
     cacheKey.update(rowBounds.getOffset());
+    //将 li mit 添加到 Ca cheKey 对象 中
     cacheKey.update(rowBounds.getLimit());
+    //将 SQL 语句添加到 CacheKey 对象中
     cacheKey.update(boundSql.getSql());
 
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
     // mimic DefaultParameterHandler logic
+    //获取用户传入的实参，并添加 .f1J CacheKey 对象中
     for (ParameterMapping parameterMapping : parameterMappings) {
       if (parameterMapping.getMode() != ParameterMode.OUT) {
         Object value;
@@ -231,9 +257,10 @@ public abstract class BaseExecutor implements Executor {
           MetaObject metaObject = configuration.newMetaObject(parameterObject);
           value = metaObject.getValue(propertyName);
         }
-        cacheKey.update(value);
+        cacheKey.update(value);//将实参添加到 CacheKey 对象中
       }
     }
+    //如果 Environment 的 id 不为空，则将其添加到 CacheKey 中
     if (configuration.getEnvironment() != null) {
       // issue #176
       cacheKey.update(configuration.getEnvironment().getId());
@@ -332,7 +359,7 @@ public abstract class BaseExecutor implements Executor {
   }
 
   /**
-   * 到数据库中查询
+   * 到数据库中查询  并把查询结果放到以及缓存中
    * @param ms
    * @param parameter
    * @param rowBounds
@@ -347,6 +374,7 @@ public abstract class BaseExecutor implements Executor {
     List<E> list;
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
+      //doQuery （）方法是一个抽象方法，也是上述 4 个基本方法之一，由 BaseExecutor 的子类具体实现
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
       localCache.removeObject(key);

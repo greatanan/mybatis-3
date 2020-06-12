@@ -53,7 +53,7 @@ public class SqlSessionFactoryBuilder {
    */
   public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
     try {
-      //mynote: 读取配置文件
+      //mynote: 读取配置核心文件
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
       //解析配置文件得到Configuration对象  XMLConfigBuilder解析mybatis的核心配置文件
       Configuration configuration = parser.parse();
@@ -100,6 +100,11 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+  /**
+   * //mynote: 根据核心配置类创建DefaultSqlSessionFactory
+   * @param config
+   * @return
+   */
   public SqlSessionFactory build(Configuration config) {
     return new DefaultSqlSessionFactory(config);
   }

@@ -52,8 +52,15 @@ public class ParamNameResolver {
    */
   private final SortedMap<Integer, String> names;
 
+  /** ParamNameResolver 的 hasParamAnnotation 字段（ boolean 类型）记录对应方法的参数列表
+   中是否使用了＠Param 注解。 */
   private boolean hasParamAnnotation;
 
+  /**
+   * 在 ParamNameResolver 的构造方法中，会通过反射的方式读取 Mapper 接口中对应方法的信息
+   * @param config
+   * @param method
+   */
   public ParamNameResolver(Configuration config, Method method) {
     this.useActualParamName = config.isUseActualParamName();
     final Class<?>[] paramTypes = method.getParameterTypes();

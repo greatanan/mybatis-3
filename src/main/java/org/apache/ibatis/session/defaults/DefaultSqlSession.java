@@ -45,10 +45,18 @@ import org.apache.ibatis.session.SqlSession;
  * Note that this class is not Thread-Safe.
  *
  * @author Clinton Begin
+ * //mynote: 单独使用 MyBatis 进行开发时最常用的 SqISession 接口实现
+ *
+ *
+ * 策略模式的应用：在 DefaultSq!Session 中使用到了策略模式， DefaultSq!Session 扮演了 Context 的角色，而将
+ *               所有数据库相关的操作全部封装到 Executor 接口实现中，并通过 executor 字段选择不同的Executor 实现。
  */
 public class DefaultSqlSession implements SqlSession {
 
+  /**  Configuraton 配置对象 */
   private final Configuration configuration;
+
+  /** ／底层依赖的 Executor 对象 */
   private final Executor executor;
 
   private final boolean autoCommit;
@@ -57,6 +65,7 @@ public class DefaultSqlSession implements SqlSession {
 
   public DefaultSqlSession(Configuration configuration, Executor executor, boolean autoCommit) {
     this.configuration = configuration;
+    //初始化executor  executor负责具体执行的sql逻辑
     this.executor = executor;
     this.dirty = false;
     this.autoCommit = autoCommit;

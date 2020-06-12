@@ -28,18 +28,18 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
- * @author Clinton Begin
- */
-
-/**
  * mybatis执行器接口
+ * Executor 是 MyBati s 的核心接口之一 ， 其中定义了数据库操作的基本方法。在实际应用中
+ * 经常涉及的 SqISession 接口的功能，都是基于 Executor 接口实现的
  */
 public interface Executor {
 
   ResultHandler NO_RESULT_HANDLER = null;
 
+  //执行 update 、 insert, delete 三种类型的 SQL 语句
   int update(MappedStatement ms, Object parameter) throws SQLException;
 
+  //执行 select 类型的 SQL 语句，返回位分为结采对象 ~1］表或游标对象
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
 
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException;
@@ -56,6 +56,9 @@ public interface Executor {
 
   boolean isCached(MappedStatement ms, CacheKey key);
 
+  /**
+   * 清空一级缓存
+   */
   void clearLocalCache();
 
   void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType);

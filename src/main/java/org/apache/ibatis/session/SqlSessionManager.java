@@ -31,9 +31,12 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
  * @author Larry Meadors
+ * //mynote: SqlSessionManager 同时实现了 SqlSession 接口和 SqlSessionFactory 接口 ，也就同时提供了
+ *                             SqlSessionFactory 创建 SqlSession 对象 以及 SqlSession 操纵数据库的功能。
  */
 public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
+  //mynote: 底层封笨的 SqlSessionFactory 对象
   private final SqlSessionFactory sqlSessionFactory;
   private final SqlSession sqlSessionProxy;
 

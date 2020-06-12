@@ -93,7 +93,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     this.resource = resource;
   }
 
-  //解析xml文件里面的内容
+  //解析映射xml文件里面的内容
   public void parse() {
     //mynote: 判断是否加载过该映射文件
     if (!configuration.isResourceLoaded(resource)) {
@@ -101,6 +101,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       configurationElement(parser.evalNode("/mapper"));
       //将resource添加到loadedResources集合中 记录已经加载过得映射文件
       configuration.addLoadedResource(resource);
+      //mynote: 将映射文件和对应的Mapper接口进行绑定
       bindMapperForNamespace();
     }
 
@@ -436,14 +437,16 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
-  //mynote: 将映射文件和对应的Mapper接口进行绑定
+  /**
+   * mynote: 将映射文件和对应的Mapper接口进行绑定
+   */
   private void bindMapperForNamespace() {
-    //mynote: 获取命名空间
+    //mynote: 获取命名空间 也即是我们dao层接口的名字 这里比如：com.mybatis.greatanan.dao.PersonDao
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
       Class<?> boundType = null;
       try {
-        //mynote: 解析命名空间对应的类型
+        //mynote: 解析命名空间对应的类型 就是我们dao层接口的java类型
         boundType = Resources.classForName(namespace);
       } catch (ClassNotFoundException e) {
         // ignore, bound type is not required
@@ -452,9 +455,11 @@ public class XMLMapperBuilder extends BaseBuilder {
         // Spring may not know the real resource name so we set a flag
         // to prevent loading again this resource from the mapper interface
         // look at MapperAnnotationBuilder#loadXmlResource
+
         //mynote: 追加namespace前缀 并添加到loadedResources集合中
         configuration.addLoadedResource("namespace:" + namespace);
-        //mynote: 调用MapperRegistry.addMapper()方法 注册boundType
+        //mynote: 调用MapperRegistry.addMapper()方法 注册boundType   就是将接口加入到mapperRegistry中
+        //mynote: 最终调用的是 knownMappers.put(type, new MapperProxyFactory<>(type));
         configuration.addMapper(boundType);
       }
     }

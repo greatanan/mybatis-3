@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2020 the original author or authors.
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Copyright 2009-2020 the original author or authors.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.binding;
 
@@ -41,18 +41,16 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
- * @author Clinton Begin
- * @author Eduardo Macarron
- * @author Lasse Voss
- * @author Kazuki Shimizu
  * //mynote: MapperMethod 中封装了 Mapper 接口中对应方法的信息，以及对应 SQL 语句的信息。读者
  *           可以将 MapperMethod 看作连接 Mapper 接口以及映射配置文件中定义的 SQL 语句的桥梁。
  */
 public class MapperMethod {
 
-  private final SqlCommand command;//记录了 SQL 语句的名称和类型
+  /**记录了 SQL 语句的名称和类型 ,SqlCommand是MapperMethod的内部类  */
+  private final SqlCommand command;
 
-  private final MethodSignature method;//Mapper 接口中对应方法的相关信息
+  /**Mapper 接口中对应方法的相关信息 */
+  private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
     this.command = new SqlCommand(config, mapperInterface, method);
@@ -60,8 +58,7 @@ public class MapperMethod {
   }
 
   /**
-   * MapperMethod 中
-   * 最核心的方法是 execute（）方法，它会根据 SQL 语句的类型调用 SqISession 对应的方法完成数据库操作
+   * MapperMethod 中最核心的方法是 execute（）方法，它会根据 SQL 语句的类型调用 SqISession 对应的方法完成数据库操作
    * @param sqlSession
    * @param args
    * @return
@@ -104,7 +101,7 @@ public class MapperMethod {
           Object param = method.convertArgsToSqlCommandParam(args);
           result = sqlSession.selectOne(command.getName(), param);
           if (method.returnsOptional()
-              && (result == null || !method.getReturnType().equals(result.getClass()))) {
+            && (result == null || !method.getReturnType().equals(result.getClass()))) {
             result = Optional.ofNullable(result);
           }
         }
@@ -117,7 +114,7 @@ public class MapperMethod {
     }
     if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
       throw new BindingException("Mapper method '" + command.getName()
-          + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+        + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
     }
     return result;
   }
@@ -141,10 +138,10 @@ public class MapperMethod {
   private void executeWithResultHandler(SqlSession sqlSession, Object[] args) {
     MappedStatement ms = sqlSession.getConfiguration().getMappedStatement(command.getName());
     if (!StatementType.CALLABLE.equals(ms.getStatementType())
-        && void.class.equals(ms.getResultMaps().get(0).getType())) {
+      && void.class.equals(ms.getResultMaps().get(0).getType())) {
       throw new BindingException("method " + command.getName()
-          + " needs either a @ResultMap annotation, a @ResultType annotation,"
-          + " or a resultType attribute in XML so a ResultHandler can be used as a parameter.");
+        + " needs either a @ResultMap annotation, a @ResultType annotation,"
+        + " or a resultType attribute in XML so a ResultHandler can be used as a parameter.");
     }
     Object param = method.convertArgsToSqlCommandParam(args);
     if (method.hasRowBounds()) {
@@ -234,15 +231,18 @@ public class MapperMethod {
 
   }
 
-  /*
-  * SqlCommand 是 MapperMethod 中 定义的内部类，它使用 name 字段记录了 SQL 语句的名称，
-    使用 type 宇段（ SqlCommandType 类型）记录了 SQL 语句的类型。 SqlCommandType 是枚举类
-    型，有效取值为 UNKNOWN 、 INSERT、 UPDATE 、 DELETE 、 SELECT 、 FLUSH
-* */
+  /**
+   * SqlCommand 是 MapperMethod 中 定义的内部类
+   * 它使用 name 字段记录了 SQL 语句的名称，
+   * 使用 type 宇段（ SqlCommandType 类型）记录了 SQL 语句的类型。 SqlCommandType 是枚举类型，有效取值为 UNKNOWN 、 INSERT、 UPDATE 、 DELETE 、 SELECT 、 FLUSH
+   */
   public static class SqlCommand {
 
+    /** 这个名称是sql语句的名称 也就是映射文件里面命名空间的名称拼接上我们sql标签的id组成的 */
     private final String name;
 
+    /**使用 type 宇段（ SqlCommandType 类型）记录了 SQL 语句的类型。 SqlCommandType 是枚举类
+     * 有效取值为 UNKNOWN 、 INSERT、 UPDATE 、 DELETE 、 SELECT 、 FLUSH */
     private final SqlCommandType type;
 
     //SqICommand 的构造方法会初始化 name 字段和 type 字段
@@ -250,16 +250,17 @@ public class MapperMethod {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
-          configuration);
+        configuration);
       if (ms == null) {
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
           type = SqlCommandType.FLUSH;
         } else {
           throw new BindingException("Invalid bound statement (not found): "
-              + mapperInterface.getName() + "." + methodName);
+            + mapperInterface.getName() + "." + methodName);
         }
       } else {
+        //初始化name和type
         name = ms.getId();
         type = ms.getSqlCommandType();
         if (type == SqlCommandType.UNKNOWN) {
@@ -277,10 +278,12 @@ public class MapperMethod {
     }
 
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
-        Class<?> declaringClass, Configuration configuration) {
+                                                   Class<?> declaringClass, Configuration configuration) {
 //      SQL 语句的名称是由 Mapper 接口的名称与对应的方法名称组成的
       String statementId = mapperInterface.getName() + "." + methodName;
-      if (configuration.hasStatement(statementId)) {
+      if (configuration.hasStatement(statementId)) {//检测是否有该名称的MappedStatement
+        //从 Configuration.MappedStatements 集合中查找对应的 MappedStatement 对象，
+        //MappedStatement 对象中封装了 SQL 语句相关的信息，在 MyBatis 初始化时创建
         return configuration.getMappedStatement(statementId);
       } else if (mapperInterface.equals(declaringClass)) {
         return null;
@@ -288,7 +291,7 @@ public class MapperMethod {
       for (Class<?> superInterface : mapperInterface.getInterfaces()) {
         if (declaringClass.isAssignableFrom(superInterface)) {
           MappedStatement ms = resolveMappedStatement(superInterface, methodName,
-              declaringClass, configuration);
+            declaringClass, configuration);
           if (ms != null) {
             return ms;
           }
@@ -309,9 +312,18 @@ public class MapperMethod {
     private final String mapKey;
     private final Integer resultHandlerIndex;
     private final Integer rowBoundsIndex;
+
+    /** 在 MethodSignature 中， 会使用 ParamNameResolver 处理 Mapper 接口中定义的方法的参数列表 */
     private final ParamNameResolver paramNameResolver;
 
+    /**
+     * 在 MethodSignature 的构造函数中会解析相应的 Method 对象， 并初始化上面字段
+     * @param configuration
+     * @param mapperInterface
+     * @param method
+     */
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
+      //解析方法的返回值类型，前面已经介绍过 TypeParameterResolver 的实现，这里不再赞述
       Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, mapperInterface);
       if (resolvedReturnType instanceof Class<?>) {
         this.returnType = (Class<?>) resolvedReturnType;
