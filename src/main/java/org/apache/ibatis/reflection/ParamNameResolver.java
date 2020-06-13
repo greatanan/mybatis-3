@@ -31,6 +31,13 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+/**
+ * 在 MethodSignature 中， 会使用 ParamNameResolver 处理 Mapper 接口中定义的方法的参数
+ * 列表。 ParamNameResolver 使用 name 宇段（ SortedMap<Integer, String＞类型）记录了参数在参
+ * 数列表中 的位置索 引与参数名称之间的对应关系，其中 key 表示参数在参数列表中的索引位置，
+ * va lue 表示参数名称 ，参数名称可以通过＠Param 注解指定，如果没有指定＠Param 注解，则使
+ * 用参数索寻｜作为其名称
+ */
 public class ParamNameResolver {
 
   public static final String GENERIC_NAME_PREFIX = "param";
@@ -57,26 +64,33 @@ public class ParamNameResolver {
   private boolean hasParamAnnotation;
 
   /**
-   * 在 ParamNameResolver 的构造方法中，会通过反射的方式读取 Mapper 接口中对应方法的信息
+   * //mynote: 在 ParamNameResolver 的构造方法中，会通过反射的方式读取 Mapper 接口中对应方法的信息  井初始化上述两个字段
    * @param config
    * @param method
    */
   public ParamNameResolver(Configuration config, Method method) {
     this.useActualParamName = config.isUseActualParamName();
+    //mynote: 获取参数列表中每个参数的类型
     final Class<?>[] paramTypes = method.getParameterTypes();
+    //mynote: 获取参数列表上的注解
     final Annotation[][] paramAnnotations = method.getParameterAnnotations();
+    //mynote: 该集合用于记录参数索引与参数名称的对应关系
     final SortedMap<Integer, String> map = new TreeMap<>();
     int paramCount = paramAnnotations.length;
     // get names from @Param annotations
     for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
       if (isSpecialParameter(paramTypes[paramIndex])) {
+        //如采参数是 RowBounds 类型或 ResultHandler 类型，贝1］跳过对该参数的分析
         // skip special parameters
         continue;
       }
       String name = null;
+      //mynote:  遥历该参数对应的 注解集合
       for (Annotation annotation : paramAnnotations[paramIndex]) {
         if (annotation instanceof Param) {
+          //mynote: @Param i主解出现过一次，就将 hasParamAnnotation 初始化为 true
           hasParamAnnotation = true;
+          //mynote: 获取自 Pa ram 注解指定的参数名称
           name = ((Param) annotation).value();
           break;
         }
@@ -89,11 +103,14 @@ public class ParamNameResolver {
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
+          //mynote: 使用参数的索引作为其名称
           name = String.valueOf(map.size());
         }
       }
+      //记录到 map 中保存
       map.put(paramIndex, name);
     }
+    //mynote: 初始化 names 集合
     names = Collections.unmodifiableSortedMap(map);
   }
 
@@ -101,6 +118,7 @@ public class ParamNameResolver {
     return ParamNameUtil.getParamNames(method).get(paramIndex);
   }
 
+  //mynote: isSpecialParameter （）方法用来过滤 RowBounds 和 ResultHandler 两种类型的参数
   private static boolean isSpecialParameter(Class<?> clazz) {
     return RowBounds.class.isAssignableFrom(clazz) || ResultHandler.class.isAssignableFrom(clazz);
   }
@@ -125,6 +143,7 @@ public class ParamNameResolver {
    * @param args
    *          the args
    * @return the named params
+   * //mynote: names 集合主要在 ParamNameResolver. getNamedParams（）方法中使用，该方法接收的参数是用户传入的实参列表，并将实参与其对应名称进行关联
    */
   public Object getNamedParams(Object[] args) {
     final int paramCount = names.size();
@@ -134,6 +153,7 @@ public class ParamNameResolver {
       Object value = args[names.firstKey()];
       return wrapToMapIfCollection(value, useActualParamName ? names.get(0) : null);
     } else {
+      //mynote: param 这个 Map 中记录了参数名称与实参之间的对应关系 。 ParamMap 继承了 HashMap，如果向ParamMap 中添加已经存在的 key，会报错，其他行为与 HashMap 相同
       final Map<String, Object> param = new ParamMap<>();
       int i = 0;
       for (Map.Entry<Integer, String> entry : names.entrySet()) {

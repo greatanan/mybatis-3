@@ -27,12 +27,13 @@ import java.sql.SQLException;
 /*
 //mynote:
  MyBatis 中所有的类型转换器都继承了 TypeHandler 接 口 ，在 TypeHandler 接口中定义了如
-下四个方法 ， 这四个方法分为两类 ： setParameter（）方法负责将数据 由 JdbcType 类型转换成 Java
-              类型： getResult（）方法及其重载负责将数据由 Java 类型转换成 JdbcType 类型。
+              下四个方法 ， 这四个方法分为两类 ：
+                 setParameter（）方法负责将数据 由Java类型  转换成JdbcType 类型 ：
+                 getResult（）方法及其重载负责将数据由 JdbcType 类型转换成 Java 类型 。
 * */
 public interface TypeHandler<T> {
 
-  //mynote: 在通过 PreparedStatement 为 SQL 语句绑定参数时 ，会将数据由 JdbcType 类型转换成 Java 类型
+  //mynote: 在通过 PreparedStatement 为 SQL 语句绑定参数时 ，会将数据由Java 类型 转换成 JdbcType 类型
   void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
   /**
@@ -46,7 +47,7 @@ public interface TypeHandler<T> {
    * @throws SQLException
    *           the SQL exception
    *
-   *           从 ResultSet 中获取数据时会调用此方法，会将数据由 Java 类型转换成 JdbcType 类型
+   *           从 ResultSet 中获取数据时会调用此方法，会将数据由JdbcType 类型转换成  Java 类型
    */
   T getResult(ResultSet rs, String columnName) throws SQLException;
 

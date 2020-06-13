@@ -55,20 +55,23 @@ import org.apache.ibatis.session.Configuration;
  *           知道何时使用哪个 TypeHandler 接口实现完成转换呢？
  *
  *           在 MyBatis 初始化过程中，会为所有己知的 TypeHandler 创建对象，并实现注册到
- *           TypeHandlerRegistry 中，由 TypeHandlerRegis盯F 负责管理这些 TypeHandler 对象。
+ *           TypeHandlerRegistry 中，由 TypeHandlerRegis负责管理这些 TypeHandler 对象。
  */
 public final class TypeHandlerRegistry {
 
-//   记录 JdbcType 与 TypeHandler 之间的对应关系，其中 Jdb cType 是一个枚举类型，它定义对应的 J DBC 类型
-//  该集合主要用于从结果集读取数据时，将数据从 Jdbc 类型转换成 Java 类型
+  /** 记录 JdbcType 与 TypeHandler 之间的对应关系，其中 Jdb cType 是一个枚举类型，它定义对应的 J DBC 类型
+   * 该集合主要用于从结果集读取数据时，将数据从 Jdbc 类型转换成 Java 类型*/
   private final Map<JdbcType, TypeHandler<?>>  jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
-//  记录了 Java 类型向指定 JdbcType 转换时，需妥使用的 Type Handler 对象。 例如： Java 类型中的 String 可能
-//／／转换成数据库的 ch ar 、 varchar 等多种类型，所以存在一对多关系
+
+  /**记录了 Java 类型向指定 JdbcType 转换时，需妥使用的 Type Handler 对象。 例如： Java 类型中的 String 可能转换成数据库的 char 、 varchar 等多种类型，所以存在一对多关系  */
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
+
   private final TypeHandler<Object> unknownTypeHandler;
-  //记录了全部 TypeHandler 的类型以及该类型相应的 T ypeHandler 对象
+
+  /**记录了全部 TypeHandler 的类型以及该类型相应的 T ypeHandler 对象  */
   private final Map<Class<?>, TypeHandler<?>> allTypeHandlersMap = new HashMap<>();
-//空 TypeHandler 集合的标识
+
+  /**空 TypeHandler 集合的标识  */
   private static final Map<JdbcType, TypeHandler<?>> NULL_TYPE_HANDLER_MAP = Collections.emptyMap();
 
   private Class<? extends TypeHandler> defaultEnumTypeHandler = EnumTypeHandler.class;

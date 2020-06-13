@@ -34,11 +34,24 @@ import org.apache.ibatis.io.Resources;
 
 /**
  * @author Clinton Begin
+ *
+ * //mynote: 在编写 SQL 语句时，使用别名可以方便理解 以及维护，例如表名或列名很长时，我们一般
+ * 会为其设计易懂易维护的别名。 MyBatis 将 SQL 语句中别名的概念进行了延伸和扩展 ， MyBatis
+ * 可以为一个类添加一个别名，之后就可以通过别名引用该类。
+ * MyBatis 通过 TypeAliasRegis町 类完成别名注册和管理的功能， TypeAliasRegistry 的结构 比
+ * 较简单，它通过 TYPE_ALIASES 宇段 CMap<Striing， Class＜？＞＞类型）管理别名与 Java 类型之间
+ * 的对应关系，通过 TypeAliasRegistry.registerAlias（）方法完成注册别名
  */
 public class TypeAliasRegistry {
 
+  /** 管理别名与 Java 类型之间的对应关系 */
   private final Map<String, Class<?>> typeAliases = new HashMap<>();
 
+  /**
+   * 在 TypeAliasRegis町的构造方法中，默认为 Java 的基本类型及其数组类型、基本类型的封
+   * 装类及其数组类型 、 Date 、 BigDecimal 、 Biglnt巳ger、 Map 、 HashMap 、 List、 ArrayList、 Collection、
+   * Iterator 、 ResultSet 等类型添加了 别 名，代码 比较简单
+   */
   public TypeAliasRegistry() {
     registerAlias("string", String.class);
 
@@ -149,13 +162,17 @@ public class TypeAliasRegistry {
 
   public void registerAlias(String alias, Class<?> value) {
     if (alias == null) {
+      //检测 a lias 为 null ，则直接抛出异常（略）
       throw new TypeException("The parameter alias cannot be null");
     }
     // issue #748
+    //将别名转换为小写
     String key = alias.toLowerCase(Locale.ENGLISH);
+    //检测别名是否 已经存在
     if (typeAliases.containsKey(key) && typeAliases.get(key) != null && !typeAliases.get(key).equals(value)) {
       throw new TypeException("The alias '" + alias + "' is already mapped to the value '" + typeAliases.get(key).getName() + "'.");
     }
+    //注册别名
     typeAliases.put(key, value);
   }
 

@@ -22,19 +22,22 @@ import java.sql.SQLException;
 
 /**
  * @author Clinton Begin
+ * //mynote:
  */
 public class IntegerTypeHandler extends BaseTypeHandler<Integer> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Integer parameter, JdbcType jdbcType)
       throws SQLException {
-    ps.setInt(i, parameter);//mynote: 调用 PreparedStatement.setInt（｝实现参数绑定
+    //mynote: 调用 PreparedStatement.setInt（｝实现参数绑定
+    ps.setInt(i, parameter);
   }
 
   @Override
   public Integer getNullableResult(ResultSet rs, String columnName)
       throws SQLException {
-    int result = rs.getInt(columnName);//调用 ResultSet.getInt（｝获取指定列位
+    //调用 ResultSet.getInt（｝获取指定列位
+    int result = rs.getInt(columnName);
     return result == 0 && rs.wasNull() ? null : result;
   }
 

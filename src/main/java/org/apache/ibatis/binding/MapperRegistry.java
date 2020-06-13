@@ -44,7 +44,7 @@ public class MapperRegistry {
   private final Configuration config;
 
   /**
-   * 记录了 Mapper 接口与对应 MapperProxyFactory 之间的关系
+   * //mynote: 记录了 Mapper 接口与对应 MapperProxyFactory 之间的关系
    */
   private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<>();
 
@@ -54,7 +54,7 @@ public class MapperRegistry {
   }
 
   /**
-   * 在 MyBatis 初始化过程中会读取映射配置文件以及 Mapper 接口中 的注解信息 ，并调用
+   * //mynote: 在 MyBatis 初始化过程中会读取映射配置文件以及 Mapper 接口中 的注解信息 ，并调用
    * MapperRegistry.addMapperO方法填充 MMapperRegistry.knownMappers 集合 ， 该集合的 key 是
    * Mapper 接口对应的 Class 对象， value 为 MapperProxyFactory 工厂对象(可以为 Mapper 接口创建代理对象)
    *
@@ -68,8 +68,10 @@ public class MapperRegistry {
       }
       boolean loadCompleted = false;
       try {
+
         //mynote: 将 Mapper 接 口对应的 Class 对象和 MapperProxyFactory 对象添加到 knownMappers 集合
         knownMappers.put(type, new MapperProxyFactory<>(type));
+
         //mynote: 下 面涉及 XML 解析和注解的处理，后面详细介绍
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the
@@ -86,9 +88,8 @@ public class MapperRegistry {
   }
 
   /**
-   * 在需要执行某 SQL 语句时 ，会先调用 MapperRegistry.getMapper（）方法获取实现了 Mapper
-   * 接口的代理对象
-   * <p>
+   * //mynote: 在需要执行某 SQL 语句时 ，会先调用 MapperRegistry.getMapper（）方法获取实现了 Mapper接口的代理对象
+   *
    * 例如本节开始的示例中， session.getMapper(BlogMapper. class）方法得到的实际
    * 上是 MyBatis 通过 JDK 动态代理为 BlogMapper 接口生成的代理对象
    *
@@ -106,7 +107,7 @@ public class MapperRegistry {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
-      //创建实现了 type 接 口的代理对象
+      //创建实现了type接口的代理对象
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);

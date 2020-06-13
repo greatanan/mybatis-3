@@ -105,7 +105,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  */
 public class Configuration {
 
-  /** MapperRegistry MapperRegisy 是 Mapper 接口及其对应的代理对象工厂的注册中心 */
+  /** //mynote: MapperRegistry MapperRegisy 是 Mapper 接口及其对应的代理对象工厂的注册中心 */
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
 
   //这个map是存放我们的sql语句对应的MappedStatement

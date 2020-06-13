@@ -34,6 +34,18 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  * @author Simone Tripodi
  * @author Kzuki Shimizu
+ * //mynote: 为方便用户自定义 TypeHand\er 实现， MyBatis 提供了 BaseTypeHandler 这个抽象类，它实
+ *             现了 TypeHandler 接口，并继承了 TypeReference 抽象类
+ *             在 BaseTypeHandler 中实现了 TypeHandler.setParameter（）方法和 TypeHandler.getResult（）方法 ，
+ *              具体实现如下所示。需要注意的是，这两个方法对于非空数据的处理都交给了子类实现
+ *
+ *
+ *              BaseTypeHandler 的实现类 比较多 ，但大多是直接调用 PreparedStatement
+ *               和 ResultSet 或 CallableStatement 的对应方法，实现比较简单 我们可以打开IntegerTypeHandler看一下。
+ *
+ *               一般情况下， TypeHandler 用于完成单个参数以及单个列值的类型转换 ， 如果存在多列值转
+ *                换成一个 Java 对象的需求， 应该优先考虑使用在映射文件中定义合适的映射规则 （<resultMap>节点）完成映射
+ *
  */
 public abstract class BaseTypeHandler<T> extends TypeReference<T> implements TypeHandler<T> {
 
@@ -62,6 +74,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
         throw new TypeException("JDBC requires that the JdbcType must be specified for all nullable parameters.");
       }
       try {
+        //绑定参数为 null 的处理
         ps.setNull(i, jdbcType.TYPE_CODE);
       } catch (SQLException e) {
         throw new TypeException("Error setting null for parameter #" + i + " with JdbcType " + jdbcType + " . "
@@ -70,6 +83,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
       }
     } else {
       try {
+        //绑定非空参数，该方法抽象方法，由子类实现
         setNonNullParameter(ps, i, parameter, jdbcType);
       } catch (Exception e) {
         throw new TypeException("Error setting non null for parameter #" + i + " with JdbcType " + jdbcType + " . "
@@ -82,6 +96,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
   @Override
   public T getResult(ResultSet rs, String columnName) throws SQLException {
     try {
+      //有多个重载， 由子类实现
       return getNullableResult(rs, columnName);
     } catch (Exception e) {
       throw new ResultMapException("Error attempting to get column '" + columnName + "' from result set.  Cause: " + e, e);
