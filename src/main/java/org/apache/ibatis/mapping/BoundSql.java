@@ -48,9 +48,15 @@ PreparedStatement. set＊（）方法为 SQL 语句绑定实参。 MyBatis 只�
 /
  */
   private final String sql;
+
+  /** ，在 BoundSql 中记录的 SQL 语句中可能包含“？”占符，而每个 “？”占位符都对应了 BoundSql parameterMappings 集合中的 个元素，在该
+   ParameterMapping 中记录了对应 参数名称以及该参数的相关属性。 */
   private final List<ParameterMapping> parameterMappings;
+
   private final Object parameterObject;
+
   private final Map<String, Object> additionalParameters;
+
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {

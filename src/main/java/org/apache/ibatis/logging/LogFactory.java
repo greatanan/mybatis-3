@@ -30,18 +30,20 @@ public final class LogFactory {
    */
   public static final String MARKER = "MYBATIS";
 
-  /** 记录当前使用的第二方日志组件所对应的适配器的构造方法 */
+  /** 记录当前使用的第三方日志组件所对应的适配器的构造方法 */
   private static Constructor<? extends Log> logConstructor;
 
-  /*
-  在 LogFactory 类加载时会执行其静态代码块，其逻辑是按序加载并实例化对应日志组件的
-  适配器，然后使用 LogFactory.logConstructor 这个静态宇段，记录当前使用的第三方日志组件的
-  适配器
-  * */
+
+  /**
+   * //mynote:  在 LogFactory 类加载时会执行其静态代码块，其逻辑是按序加载并实例化对应日志组件的适配器，
+   *  然后使用 LogFactory.logConstructor 这个静态宇段，记录当前使用的第三方日志组件的适配器
+   */
   static {
-    /*／／下面会针对每种 日志组件调用 tryimplementation （ ）方法进行尝试加载，具体调用顺序是：
-11 useSlf 4jLogging （）一 ＞ useCommonsLogging （）一＞ useLog4J2Logging （）一〉
-II useLog4JLogging()--> useJdkLogging() -> useNoLogging()*/
+    /*／／下面会针对每种 日志组件调用 tryimplementation （ ）方法进行尝试加载，
+          具体调用顺序是：
+               useSlf 4jLogging （）一 ＞ useCommonsLogging （）一＞ useLog4J2Logging （）一〉
+               useLog4JLogging()--> useJdkLogging() -> useNoLogging()*/
+
     tryImplementation(LogFactory::useSlf4jLogging);
     tryImplementation(LogFactory::useCommonsLogging);
     tryImplementation(LogFactory::useLog4J2Logging);
@@ -112,7 +114,7 @@ II useLog4JLogging()--> useJdkLogging() -> useNoLogging()*/
     try {
       //获取指定适配器的构造方法
       Constructor<? extends Log> candidate = implClass.getConstructor(String.class);
-      //实例化运配葛
+      //实例化适配器
       Log log = candidate.newInstance(LogFactory.class.getName());
       if (log.isDebugEnabled()) {
         log.debug("Logging initialized using '" + implClass + "' adapter.");

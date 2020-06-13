@@ -22,6 +22,9 @@ import java.sql.SQLException;
  * A parameter handler sets the parameters of the {@code PreparedStatement}.
  *
  * @author Clinton Begin
+ * //mynote:
+ * ParameterHandler 接口中定义了一个 setParameters （） 方法，该方法主要负责调用
+ * PreparedStatement. set ＊（）方法为 QL 语句绑定实参。 MyBatis 只为 ParameterHandler 接口提供了一个实现类DefaultParameterHandler
  */
 public interface ParameterHandler {
 
