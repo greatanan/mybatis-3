@@ -35,20 +35,33 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ * //mynote: BaseStatementHandler 是一个实现了 StatementHandler接口的抽象类，它只提供了一些参数
+ *           绑定相关的方法，并没有实现操作数据库的方法。
+ *           BaseStatementHandler 依赖两个 重要 的组件， 它们分别是 ParameterHandler ResultSetHandler
  */
 public abstract class BaseStatementHandler implements StatementHandler {
 
   protected final Configuration configuration;
   protected final ObjectFactory objectFactory;
   protected final TypeHandlerRegistry typeHandlerRegistry;
+
+  /** 记录使用的 ResultSetHandler 对象， 它的主要功能 结采集映射成结采对象 */
   protected final ResultSetHandler resultSetHandler;
+
+  /**记录使用的 ParameterHandler 对象， ParameterHandler 的主要功能是为 SQL句绑定实参 ，也就是
+  使用传入的实参替换 SQL 吾句的中 ”占 位符，后面会详细介绍  */
   protected final ParameterHandler parameterHandler;
 
+  /** 记录执行 SQL 语句的 Executor 对象 */
   protected final Executor executor;
-  protected final MappedStatement mappedStatement;
+
+  /** RowBounds 记录了用户设置的 offset limIt ，用于在结采集中定位映射的起始位置和结束位置 */
   protected final RowBounds rowBounds;
 
+  /** 记录 SQL 吾句对应的 MappedStatement  BoundSql 对象 */
+  protected final MappedStatement mappedStatement;
   protected BoundSql boundSql;
+
 
   protected BaseStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
     this.configuration = mappedStatement.getConfiguration();
@@ -60,6 +73,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     this.objectFactory = configuration.getObjectFactory();
 
     if (boundSql == null) { // issue #435, get the key before calculating the statement
+      /** 获取sql语句的主键 */
       generateKeys(parameterObject);
       boundSql = mappedStatement.getBoundSql(parameterObject);
     }
@@ -85,6 +99,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     ErrorContext.instance().sql(boundSql.getSql());
     Statement statement = null;
     try {
+      //调用instantiateStatement（）抽象方法初始化 java.sql. Statement 对象 然后为其配置超时时间以及fetchSize 等设直
       statement = instantiateStatement(connection);
       setStatementTimeout(statement, transactionTimeout);
       setFetchSize(statement);

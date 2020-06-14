@@ -10,33 +10,36 @@ import org.junit.Test;
 public class TestFactory {
 
   @Test
-  public void insertTest(){
+  public void insertTest() {
+
     SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
     //通过SqlSessionFactory获取SqlSession
     SqlSession sqlSession = sqlSessionFactory.openSession();
 
-    PersonDao personDao =  sqlSession.getMapper(PersonDao.class);
+    PersonDao personDao = sqlSession.getMapper(PersonDao.class);
 
     Person p = new Person();
-    p.setAddress("上海市").setAge(12).setEmail("guochuanlei@163.com").setName("greatanan").setPhone2("66666666666");
+    p.setAddress("上海市").setAge(12).setEmail("ccc@163.com").setName("cccc").setPhone2("66666666666");
 
     personDao.insert(p);
+
     System.out.println(p.toString());
     sqlSession.commit();
     sqlSession.close();
   }
 
   @Test
-  public void selectTest(){
+  public void selectTest() {
+
     SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
     SqlSession sqlSession = sqlSessionFactory.openSession();
 
-    PersonDao personDao =  sqlSession.getMapper(PersonDao.class);
+    PersonDao personDao = sqlSession.getMapper(PersonDao.class);
     Person person = personDao.select(5L);
 
 //    Person person = sqlSession.selectOne("com.mybatis.chen.dao.PersonDao.select", 5L);
-
     System.out.println(person);
+    Person person2 = personDao.select(5L);
     sqlSession.commit();
     sqlSession.close();
   }

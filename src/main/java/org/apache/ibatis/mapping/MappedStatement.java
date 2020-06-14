@@ -42,7 +42,7 @@ import org.apache.ibatis.session.Configuration;
   select * from person where id = #{id}
 </select>
 */
-//和我们一个sql标签进行对应
+//mynote: 和我们一个sql标签进行对应
 public final class MappedStatement {
 
   private String resource;

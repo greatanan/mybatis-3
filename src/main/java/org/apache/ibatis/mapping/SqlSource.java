@@ -23,6 +23,7 @@ package org.apache.ibatis.mapping;
  */
 public interface SqlSource {
 
+  /** 通过解析得到 BoundSql 对象， BoundSql 对象会在后面具体介绍，其中封装了包含 ” ？”占位符的 SQL语句，以及绑定的 实参 */
   BoundSql getBoundSql(Object parameterObject);
 
 }

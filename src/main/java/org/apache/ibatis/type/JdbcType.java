@@ -22,6 +22,17 @@ import java.util.Map;
 /**
  * @author Clinton Begin
  */
+/*
+//mynote:
+JDBC 数据类型与 Java 语言中的数据类型井不是完全对应的 ，所以在 Prepared Statement 为
+SQL 语句绑定参数时，需要从 Java 类型转换成 JDBC 类型，而从结果集中获取数据时，则需要
+从 JDBC 类型转换成 Java 类型。 MyBatis 使用类型处理器完成上述两种转换
+
+首选需要读者了解的是，在 MyBatis 中使用 JdbcType 这个枚举类型代表 JDBC 中的数据类
+型，该枚举类型中定义了 TYPE_CODE 宇段，记录了 JDBC 类型在 java.sql.Types 中相应的常量
+编码，并通过一个静态集合 codeLookup ( HashMap<Integer,JdbcType＞类型〉维护了常量编码与JdbcType 之间的对应关系。
+
+ */
 public enum JdbcType {
   /*
    * This is added to enable basic support for the

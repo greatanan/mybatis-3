@@ -17,6 +17,7 @@ package org.apache.ibatis.logging;
 
 /**
  * @author Clinton Begin
+ * //mynote: 目标接口（ Target）：调用者能够直接使用的接口
  */
 public interface Log {
 

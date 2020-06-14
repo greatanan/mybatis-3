@@ -52,6 +52,9 @@ import org.apache.ibatis.type.TypeHandler;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * //mynote: XMLMapperBuilder 负责
+ *           解析映射配置文件，它继承了 BaseBuilder 抽 象类，也是具体建造者 的角色
  */
 public class XMLMapperBuilder extends BaseBuilder {
 
@@ -90,21 +93,18 @@ public class XMLMapperBuilder extends BaseBuilder {
     this.resource = resource;
   }
 
-  /**
-   * 解析XML文件的内容
-   */
+  //解析映射xml文件里面的内容
   public void parse() {
-    //如果没有加载过再加载，防止重复加载
+    //mynote: 判断是否加载过该映射文件
     if (!configuration.isResourceLoaded(resource)) {
-      //配置mapper
+      //解析配置的标签
       configurationElement(parser.evalNode("/mapper"));
-      //标记一下，已经加载过了
+      //将resource添加到loadedResources集合中 记录已经加载过得映射文件
       configuration.addLoadedResource(resource);
-      //绑定映射器到namespace
+      //mynote: 将映射文件和对应的Mapper接口进行绑定
       bindMapperForNamespace();
     }
 
-    //还有没解析完的东东这里接着解析？
     parsePendingResultMaps();
     parsePendingCacheRefs();
     parsePendingStatements();
@@ -125,10 +125,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       </select>
     </mapper>
     */
-  /**
-   * 解析<mapper namespace="com.mybatis.chen.dao.PersonDao"> </mapper> 标签
-   * @param context
-   */
+  //解析配置的标签
   private void configurationElement(XNode context) {
     try {
       String namespace = context.getStringAttribute("namespace");
@@ -136,45 +133,32 @@ public class XMLMapperBuilder extends BaseBuilder {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
-      //2.配置cache-ref
       cacheRefElement(context.evalNode("cache-ref"));
-      //3.配置cache
       cacheElement(context.evalNode("cache"));
-      //4.配置parameterMap(已经废弃,老式风格的参数映射)
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
-      //5.配置resultMap(高级功能)
       resultMapElements(context.evalNodes("/mapper/resultMap"));
-      //6.配置sql(定义可重用的 SQL 代码段)
+      //mynote: sqlElement 负责解析映射配置文件中定义的全部＜sql＞节点
       sqlElement(context.evalNodes("/mapper/sql"));
-      //7.配置select|insert|update|delete
+      //将所有的sql标签都封装成一个个对象
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
   }
-  //配置select|insert|update|delete
-  private void buildStatementFromContext(List<XNode> list) {
-    //调用构建语句
+
+  private void buildStatementFromContext(List<XNode> list) {//这里的list就是我们一个一个的sql标签  未经过处理的sql标签
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }
     buildStatementFromContext(list, null);
   }
-  /**
-   * 构建语句 将所有的sql标签都封装成一个个对象
-   * @param list
-   * @param requiredDatabaseId
-   */
+  //将所有的sql标签都封装成一个个对象
   private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
     for (XNode context : list) {
-      //构建所有语句,一个mapper下可以有很多select
-      //语句比较复杂，核心都在这里面，所以调用XMLStatementBuilder
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
       try {
-        //核心XMLStatementBuilder.parseStatementNode
         statementParser.parseStatementNode();
       } catch (IncompleteElementException e) {
-        //如果出现SQL语句不完整，把它记下来，塞到configuration去
         configuration.addIncompleteStatement(statementParser);
       }
     }
@@ -453,11 +437,16 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * mynote: 将映射文件和对应的Mapper接口进行绑定
+   */
   private void bindMapperForNamespace() {
+    //mynote: 获取命名空间 也即是我们dao层接口的名字 这里比如：com.mybatis.greatanan.dao.PersonDao
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
       Class<?> boundType = null;
       try {
+        //mynote: 解析命名空间对应的类型 就是我们dao层接口的java类型
         boundType = Resources.classForName(namespace);
       } catch (ClassNotFoundException e) {
         // ignore, bound type is not required
@@ -466,7 +455,11 @@ public class XMLMapperBuilder extends BaseBuilder {
         // Spring may not know the real resource name so we set a flag
         // to prevent loading again this resource from the mapper interface
         // look at MapperAnnotationBuilder#loadXmlResource
+
+        //mynote: 追加namespace前缀 并添加到loadedResources集合中
         configuration.addLoadedResource("namespace:" + namespace);
+        //mynote: 调用MapperRegistry.addMapper()方法 注册boundType   就是将接口加入到mapperRegistry中
+        //mynote: 最终调用的是 knownMappers.put(type, new MapperProxyFactory<>(type));
         configuration.addMapper(boundType);
       }
     }

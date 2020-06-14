@@ -28,6 +28,8 @@ import org.apache.ibatis.executor.BatchResult;
  * Through this interface you can execute commands, get mappers and manage transactions.
  *
  * @author Clinton Begin
+ *
+ * //mynote: SqlSession 是 MyBatis 核心接口之一，也是 MyBatis 接口层的主要组成部分，对外提供MyBatis 常用 AP
  */
 public interface SqlSession extends Closeable {
 

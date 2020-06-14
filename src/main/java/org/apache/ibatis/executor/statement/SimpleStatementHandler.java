@@ -34,6 +34,11 @@ import org.apache.ibatis.session.RowBounds;
 
 /**
  * @author Clinton Begin
+ *
+ * //mynote: SimpleStatementHandler 继承了 Ba eStatementHandler 抽象类。它底层使用 java. sql. Statement
+ *           对象来完成数据库的相关操作 所以 SQL 语句中不能存在占位符 相应的，
+ *           SimpleStatementHandler. param terize（） 方法是空实现
+ *           Simpl StatementH ndler.instantiateStatement（）方法直接通过 JDBc connectio 创建 Statement对象
  */
 public class SimpleStatementHandler extends BaseStatementHandler {
 
@@ -68,6 +73,8 @@ public class SimpleStatementHandler extends BaseStatementHandler {
     statement.addBatch(sql);
   }
 
+  //的 Statement 对象之后会被用于完 数据库操作 SimpleStatementHandler.query
+  //方法等完成了数据库查询的操作，并通过 ResultSetHandler 将结果集映射 结果对象。
   @Override
   public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
     String sql = boundSql.getSql();

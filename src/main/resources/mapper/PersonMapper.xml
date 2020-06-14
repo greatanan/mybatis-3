@@ -5,13 +5,13 @@
 <mapper namespace="com.mybatis.greatanan.dao.PersonDao">
 
   <insert id="insert" parameterType="Person" keyProperty="id" useGeneratedKeys="true">
-        INSERT INTO person (name, age, phone, email, address)
-        VALUES(#{name},#{age},#{phone},#{email},#{address})
+        INSERT INTO person (name, age, phone2, email, address)
+        VALUES(#{name},#{age},#{phone2},#{email},#{address})
     </insert>
 
-    <select id="select" resultType="com.mybatis.greatanan.model.Person">
+  <select id="select" resultType="com.mybatis.greatanan.model.Person">
       select * from person where id = #{id}
-    </select>
+   </select>
 
 </mapper>
 

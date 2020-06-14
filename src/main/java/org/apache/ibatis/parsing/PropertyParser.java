@@ -50,12 +50,18 @@ public class PropertyParser {
     // Prevent Instantiation
   }
 
+  //通过对 PropertyParser.parse（）方法的介绍，我们知道 Prope向1Parser 是使用 VariableTokenHand ler 与 GenericTokenParser 配合完成占位符解析的。
+  // VariableTokenHandler 是 PropertyParser中的一个私有静态内部类
   public static String parse(String string, Properties variables) {
     VariableTokenHandler handler = new VariableTokenHandler(variables);
+    //mynote: 创建 GenericTokenParser 解析器   GenericTokenParser 是一个通用的宇占位符解析器
     GenericTokenParser parser = new GenericTokenParser("${", "}", handler);
     return parser.parse(string);
   }
-
+  /*GenericTokenParser 不仅仅用于这里的默认值解析，还会用于后面对动态
+  SQL 语句的解析。很明显 ， GenericTokenParser 只是查找到指定的占位符 ， 而具体的解析行为会
+  根据其持有的 TokenHandler 实现的不同而有所不同， 这有点策略模式的意思，策略模式在后面
+  会详细介绍。*/
   private static class VariableTokenHandler implements TokenHandler {
     private final Properties variables;
     private final boolean enableDefaultValue;
