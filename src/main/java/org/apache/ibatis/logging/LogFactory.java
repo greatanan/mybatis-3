@@ -15,8 +15,6 @@
  */
 package org.apache.ibatis.logging;
 
-import com.sun.xml.internal.stream.StaxXMLInputSource;
-
 import java.lang.reflect.Constructor;
 
 /**
