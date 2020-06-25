@@ -34,7 +34,7 @@ public class TestFactory {
     PersonDao personDao = sqlSession.getMapper(PersonDao.class);
 
     Person p = new Person();
-    p.setAddress("上海市").setAge(12).setEmail("ccc@163.com").setName("cccc").setPhone2("66666666666");
+    p.setAddress("上海市").setAge(12).setEmail("ccc@163.com").setName("cccc").setPhone("66666666666");
 
     personDao.insert(p);
 
