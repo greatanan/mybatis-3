@@ -28,6 +28,7 @@ public class PerpetualCache implements Cache {
 
   private final String id;
 
+  //mynote: 二级缓存的底层也是hashmap
   private final Map<Object, Object> cache = new HashMap<>();
 
   public PerpetualCache(String id) {

@@ -55,7 +55,7 @@ public class SqlSessionFactoryBuilder {
     try {
       //mynote: 读取配置核心文件
       XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
-      //解析配置文件得到Configuration对象  XMLConfigBuilder解析mybatis的核心配置文件
+      // 解析配置文件得到Configuration对象  XMLConfigBuilder解析mybatis的核心配置文件
       Configuration configuration = parser.parse();
       //获取SqlSessionFactory    创建DefaultSqlSessionFactory 对象
       SqlSessionFactory sessionFactory = build(configuration);

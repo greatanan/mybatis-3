@@ -1,34 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!--
 
-       Copyright 2009-2020 the original author or authors.
-
-       Licensed under the Apache License, Version 2.0 (the "License");
-       you may not use this file except in compliance with the License.
-       You may obtain a copy of the License at
-
-          http://www.apache.org/licenses/LICENSE-2.0
-
-       Unless required by applicable law or agreed to in writing, software
-       distributed under the License is distributed on an "AS IS" BASIS,
-       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-       See the License for the specific language governing permissions and
-       limitations under the License.
-
--->
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mybatis.greatanan.dao.PersonDao">
 
   <insert id="insert" parameterType="Person" keyProperty="id" useGeneratedKeys="true">
-        INSERT INTO person (name, age, phone2, email, address)
-        VALUES(#{name},#{age},#{phone2},#{email},#{address})
+        INSERT INTO person (name, age, phone, email, address)
+        VALUES(#{name},#{age},#{phone},#{email},#{address})
     </insert>
 
   <select id="select" resultType="com.mybatis.greatanan.model.Person">
       select * from person where id = #{id}
    </select>
+
+  <!--开启二级缓存-->
+  <cache></cache>
 
 </mapper>
 
