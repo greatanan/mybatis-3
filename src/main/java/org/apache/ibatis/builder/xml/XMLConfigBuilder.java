@@ -99,62 +99,79 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   /**
-   * //mynote: 该商法是解析核心配置文件的入口 通过调用parseConfiguration方法实现整个解析过程0
+   * //mynote: 该方法是解析核心配置文件的入口 通过调用parseConfiguration方法实现整个解析过程0
    * @return
    */
   public Configuration parse() {
+
+    // 如果已经解析则抛出异常
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
-    parsed = true;
+
+    parsed = true; // 标记核心配置文件已解析
+
     //在核心配置文件中找到<configuration>节点，并开始解析
     parseConfiguration(parser.evalNode("/configuration"));
-    return configuration;//mynote: configuration是父类BaseBuilder里面的一个属性 核心配置类
+
+    //mynote: configuration是父类BaseBuilder里面的一个属性 核心配置类
+    return configuration;
   }
-               //下面方法parseConfiguration的参数XNode 其实就是我们mybatis全局配置文件里面的内容
-              /*<configuration>
-                  <typeAliases>
-                      <package name="com.mybatis.chen.model"/>
-                  </typeAliases>
-                  <environments default="development">
-                      <environment id="development">
-                          <transactionManager type="JDBC"/>
-                          <dataSource type="POOLED">
-                              <property name="driver" value="com.mysql.jdbc.Driver"/>
-                              <property name="url" value="jdbc:mysql://localhost:3306/pumpkin?serverTimezone=UTC"/>
-                              <property name="username" value="root"/>
-                              <property name="password" value="123"/>
-                          </dataSource>
-                      </environment>
-                  </environments>
-                  <mappers>
-                      <mapper resource="com/mybatis/chen/mapper/PersonMapper.xml"/>
-                  </mappers>
-              </configuration>*/
+
+
+                                       //下面方法parseConfiguration的参数XNode 其实就是我们mybatis全局配置文件里面的内容
+                                      /*<configuration>
+                                          <typeAliases>
+                                              <package name="com.mybatis.chen.model"/>
+                                          </typeAliases>
+                                          <environments default="development">
+                                              <environment id="development">
+                                                  <transactionManager type="JDBC"/>
+                                                  <dataSource type="POOLED">
+                                                      <property name="driver" value="com.mysql.jdbc.Driver"/>
+                                                      <property name="url" value="jdbc:mysql://localhost:3306/pumpkin?serverTimezone=UTC"/>
+                                                      <property name="username" value="root"/>
+                                                      <property name="password" value="123"/>
+                                                  </dataSource>
+                                              </environment>
+                                          </environments>
+                                          <mappers>
+                                              <mapper resource="com/mybatis/chen/mapper/PersonMapper.xml"/>
+                                          </mappers>
+                                      </configuration>*/
+
+  // 这个方法就是真正的解析我们的配置文件 将配置文件的内容放到Configuration核心配置类中
   private void parseConfiguration(XNode root) {
-    try {
-      // issue #117 read properties first
-      //先读取properties文件
-      propertiesElement(root.evalNode("properties"));
-      Properties settings = settingsAsProperties(root.evalNode("settings"));
-      loadCustomVfs(settings);
-      loadCustomLogImpl(settings);
-      typeAliasesElement(root.evalNode("typeAliases"));
-      pluginElement(root.evalNode("plugins"));
-      objectFactoryElement(root.evalNode("objectFactory"));
-      objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
-      reflectorFactoryElement(root.evalNode("reflectorFactory"));
-      settingsElement(settings);
-      // read it after objectFactory and objectWrapperFactory issue #631
-      //7.环境
-      environmentsElement(root.evalNode("environments"));
-      databaseIdProviderElement(root.evalNode("databaseIdProvider"));
-      typeHandlerElement(root.evalNode("typeHandlers"));
-      //mynote: 解析<mapper>节点 也就是配置映射文件的节点  在这一步解析我们的映射文件, 里面会把我们的我们映射文件的命名空间的值对应的dao层接口放到一个map中
-      mapperElement(root.evalNode("mappers"));
-    } catch (Exception e) {
-      throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
-    }
+
+        try {
+
+          // 对每一个标签进行解析
+
+          // issue #117 read properties first
+          //先读取properties文件
+          propertiesElement(root.evalNode("properties"));
+          Properties settings = settingsAsProperties(root.evalNode("settings"));
+          loadCustomVfs(settings);
+          loadCustomLogImpl(settings);
+          typeAliasesElement(root.evalNode("typeAliases"));
+          pluginElement(root.evalNode("plugins"));
+          objectFactoryElement(root.evalNode("objectFactory"));
+          objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+          reflectorFactoryElement(root.evalNode("reflectorFactory"));
+          settingsElement(settings);
+          // read it after objectFactory and objectWrapperFactory issue #631
+          //7.环境
+          environmentsElement(root.evalNode("environments"));
+          databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+          typeHandlerElement(root.evalNode("typeHandlers"));
+
+          //mynote: 解析<mapper>节点 也就是配置映射文件的节点  在这一步解析我们的映射文件,
+          // 里面会把我们的我们映射文件的命名空间的值对应的dao层接口放到一个map中
+          mapperElement(root.evalNode("mappers"));
+
+        } catch (Exception e) {
+          throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
+        }
   }
 
   private Properties settingsAsProperties(XNode context) {
@@ -254,25 +271,25 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private void propertiesElement(XNode context) throws Exception {
-    if (context != null) {
-      Properties defaults = context.getChildrenAsProperties();
-      String resource = context.getStringAttribute("resource");
-      String url = context.getStringAttribute("url");
-      if (resource != null && url != null) {
-        throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
+      if (context != null) {
+          Properties defaults = context.getChildrenAsProperties();
+          String resource = context.getStringAttribute("resource");
+          String url = context.getStringAttribute("url");
+          if (resource != null && url != null) {
+            throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
+          }
+          if (resource != null) {
+            defaults.putAll(Resources.getResourceAsProperties(resource));
+          } else if (url != null) {
+            defaults.putAll(Resources.getUrlAsProperties(url));
+          }
+          Properties vars = configuration.getVariables();
+          if (vars != null) {
+            defaults.putAll(vars);
+          }
+          parser.setVariables(defaults);
+          configuration.setVariables(defaults);
       }
-      if (resource != null) {
-        defaults.putAll(Resources.getResourceAsProperties(resource));
-      } else if (url != null) {
-        defaults.putAll(Resources.getUrlAsProperties(url));
-      }
-      Properties vars = configuration.getVariables();
-      if (vars != null) {
-        defaults.putAll(vars);
-      }
-      parser.setVariables(defaults);
-      configuration.setVariables(defaults);
-    }
   }
 
   private void settingsElement(Properties props) {

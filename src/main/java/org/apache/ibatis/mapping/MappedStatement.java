@@ -28,21 +28,20 @@ import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
-/**
- * @author Clinton Begin
- */
 
 /**
+ *
+ * 映射的语句 每一个sql标签对应一个MappedStatement
+ * 和我们一个sql标签进行对应
  * 封装对象：
  *    作用：对操作数据库存储封装，包括sql语句，输入输出参数
  */
 
-/*
-<select id="select" resultType="com.mybatis.chen.model.Person">
-  select * from person where id = #{id}
-</select>
-*/
-//mynote: 和我们一个sql标签进行对应
+                                                            /*
+                                                            <select id="select" resultType="com.mybatis.chen.model.Person">
+                                                              select * from person where id = #{id}
+                                                            </select>
+                                                            */
 public final class MappedStatement {
 
   private String resource;

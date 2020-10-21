@@ -55,21 +55,28 @@ public class SimpleExecutor extends BaseExecutor {
 
   @Override
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
-    Statement stmt = null;
-    try {
-      //获取配置对象
-      Configuration configuration = ms.getConfiguration();
-      //创建 StatementHandler 对象 ，实际返回的是 RoutingStatementHandler 对象，前面介绍过，
-      //其中根据 MappedStatement.statementType 选择具体的 StatementHandler 实现
-      StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
-      //完成 Statement 的创建和初始化 ，prepareStatement方法首先会调用 StatementHandler.prepare()方法创建Statement 对象 ， 然后调用 StatementHandler. parameterize （）方法处理占位符
-      stmt = prepareStatement(handler, ms.getStatementLog());
-      //mynote: 调用 StatementHandler.query())方法，执行 SQL 语句，并通过 ResultSetHandler 完成结采集的映射
-      return handler.query(stmt, resultHandler);//参数stmt是一个Statement对象 参数resultHandler是ResultHandler
-    } finally {
-      //关 闭 Statement 对象
-      closeStatement(stmt);
-    }
+
+        Statement stmt = null;
+        try {
+          // 获取核心配置对象
+          Configuration configuration = ms.getConfiguration();
+
+          //创建 StatementHandler 对象 ，实际返回的是 RoutingStatementHandler 对象，前面介绍过，
+          //其中根据 MappedStatement.statementType 选择具体的 StatementHandler 实现
+          // 我们的执行器执行的具体操作是给 StatementHandler进行执行
+          StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+
+          //完成 Statement 的创建和初始化 ，prepareStatement方法首先会调用 StatementHandler.prepare()方法创建Statement 对象 ， 然后调用 StatementHandler. parameterize （）方法处理占位符
+          stmt = prepareStatement(handler, ms.getStatementLog());
+
+          //mynote: 调用 StatementHandler.query())方法，执行 SQL 语句，并通过 ResultSetHandler 完成结结果集的映射
+          // 默认实现是PreparedStatementHandler
+          return handler.query(stmt, resultHandler);//参数stmt是一个Statement对象 参数resultHandler是ResultHandler
+
+        } finally {
+          //关 闭 Statement 对象
+          closeStatement(stmt);
+        }
   }
 
   @Override
@@ -88,14 +95,14 @@ public class SimpleExecutor extends BaseExecutor {
   }
 
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
-    Statement stmt;
-    //获取连接Connection
-    Connection connection = getConnection(statementLog);
-    //创建Statement
-    stmt = handler.prepare(connection, transaction.getTimeout());
-    //处理占位符
-    handler.parameterize(stmt);
-    return stmt;
+        Statement stmt;
+        //获取连接Connection
+        Connection connection = getConnection(statementLog);
+        //创建Statement
+        stmt = handler.prepare(connection, transaction.getTimeout());
+        //处理占位符 也就是为sql语句绑定实际参数
+        handler.parameterize(stmt);
+        return stmt;
   }
 
 }

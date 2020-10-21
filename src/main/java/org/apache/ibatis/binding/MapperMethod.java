@@ -64,62 +64,62 @@ public class MapperMethod {
    * @return
    */
   public Object execute(SqlSession sqlSession, Object[] args) {
-    Object result;
-    switch (command.getType()) {//根据 SQL 语句的类型调用 SqlSession 对应的方法
-      case INSERT: {
-        //使用 ParamNameResolver 处理 args ［］数组（用户传入的实参列表），将用户传入的 实参与指定参数名称关联起来
-        Object param = method.convertArgsToSqlCommandParam(args);
-        //调用 SqlSession .insert （）方法， rowCountResult （）方法会根据 method 字段中记录的方法的返回值类型对结果进行转换
-       /* 当执行 INSERT 、 UPDATE 、 DELETE 类型的 SQL 语句时，其执行结果都需要经过
-        MapperMethod.rowCountResult（） 方法处理。 SqISession 中的 insert（）等方法返回的是 int 值，
-        rowCountResult（）方法会将该 int 值转换成 Mapper 接口中对应方法的返回值*/
-        result = rowCountResult(sqlSession.insert(command.getName(), param));
-        break;
-      }
-      case UPDATE: {
-        Object param = method.convertArgsToSqlCommandParam(args);
-        result = rowCountResult(sqlSession.update(command.getName(), param));
-        break;
-      }
-      case DELETE: {
-        Object param = method.convertArgsToSqlCommandParam(args);
-        result = rowCountResult(sqlSession.delete(command.getName(), param));
-        break;
-      }
-      case SELECT:
-        if (method.returnsVoid() && method.hasResultHandler()) {
-          //处理返回值为 void 且 ResultSet 通过 Re sultHandler 处理的方法
-          executeWithResultHandler(sqlSession, args);
-          result = null;
-        } else if (method.returnsMany()) {
-          //处理返回值为集合或数组的方法
-          result = executeForMany(sqlSession, args);
-        } else if (method.returnsMap()) {
-          //处理返回值为 Map 的方法
-          result = executeForMap(sqlSession, args);
-        } else if (method.returnsCursor()) {
-          result = executeForCursor(sqlSession, args);
-        } else {
-          //mynote: 处理返回值为单一对象的方法
-          Object param = method.convertArgsToSqlCommandParam(args);
-          result = sqlSession.selectOne(command.getName(), param);
-          if (method.returnsOptional()
-            && (result == null || !method.getReturnType().equals(result.getClass()))) {
-            result = Optional.ofNullable(result);
+        Object result;
+        switch (command.getType()) {//根据 SQL 语句的类型调用 SqlSession 对应的方法
+          case INSERT: {
+            //使用 ParamNameResolver 处理 args ［］数组（用户传入的实参列表），将用户传入的 实参与指定参数名称关联起来
+            Object param = method.convertArgsToSqlCommandParam(args);
+            //调用 SqlSession .insert （）方法， rowCountResult （）方法会根据 method 字段中记录的方法的返回值类型对结果进行转换
+           /* 当执行 INSERT 、 UPDATE 、 DELETE 类型的 SQL 语句时，其执行结果都需要经过
+            MapperMethod.rowCountResult（） 方法处理。 SqISession 中的 insert（）等方法返回的是 int 值，
+            rowCountResult（）方法会将该 int 值转换成 Mapper 接口中对应方法的返回值*/
+            result = rowCountResult(sqlSession.insert(command.getName(), param));
+            break;
           }
+          case UPDATE: {
+            Object param = method.convertArgsToSqlCommandParam(args);
+            result = rowCountResult(sqlSession.update(command.getName(), param));
+            break;
+          }
+          case DELETE: {
+            Object param = method.convertArgsToSqlCommandParam(args);
+            result = rowCountResult(sqlSession.delete(command.getName(), param));
+            break;
+          }
+          case SELECT:
+            if (method.returnsVoid() && method.hasResultHandler()) {
+              //处理返回值为 void 且 ResultSet 通过 Re sultHandler 处理的方法
+              executeWithResultHandler(sqlSession, args);
+              result = null;
+            } else if (method.returnsMany()) {
+              //处理返回值为集合或数组的方法
+              result = executeForMany(sqlSession, args);
+            } else if (method.returnsMap()) {
+              //处理返回值为 Map 的方法
+              result = executeForMap(sqlSession, args);
+            } else if (method.returnsCursor()) {
+              result = executeForCursor(sqlSession, args);
+            } else {
+              //mynote: 处理返回值为单一对象的方法
+              Object param = method.convertArgsToSqlCommandParam(args);
+              result = sqlSession.selectOne(command.getName(), param);
+              if (method.returnsOptional()
+                && (result == null || !method.getReturnType().equals(result.getClass()))) {
+                result = Optional.ofNullable(result);
+              }
+            }
+            break;
+          case FLUSH:
+            result = sqlSession.flushStatements();
+            break;
+          default:
+            throw new BindingException("Unknown execution method for: " + command.getName());
         }
-        break;
-      case FLUSH:
-        result = sqlSession.flushStatements();
-        break;
-      default:
-        throw new BindingException("Unknown execution method for: " + command.getName());
-    }
-    if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
-      throw new BindingException("Mapper method '" + command.getName()
-        + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
-    }
-    return result;
+        if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
+          throw new BindingException("Mapper method '" + command.getName()
+            + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+        }
+        return result;
   }
 
   /**

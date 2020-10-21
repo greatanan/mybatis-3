@@ -14,9 +14,9 @@ public class SqlSessionFactoryUtil {
     String path = "mybatis-config.xml";
     SqlSessionFactory sqlSessionFactory = null;
     try {
-      //根据mybatis-config.xml获取SqlSessionFactory
+      // 根据mybatis-config.xml获取SqlSessionFactory
       Reader reader = Resources.getResourceAsReader(path);
-      //MyBatis的初始化入口是 SqlSessionFactoryBuilder.build（）方法
+      // MyBatis的初始化入口是 SqlSessionFactoryBuilder.build（）方法
       sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
 
     } catch (IOException e) {

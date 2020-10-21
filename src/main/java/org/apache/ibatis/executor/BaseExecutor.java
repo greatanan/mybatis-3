@@ -139,11 +139,12 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
 
-    BoundSql boundSql = ms.getBoundSql(parameter);
-    //创建 CacheKey 对象  就是要存放在一级缓存中的
-    CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
-    //调用 query （）的另一个重载，继续后续处理
-    return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
+        // 根据传入的参数动态的获得sql语句 最后返回 BoundSql 对象  BoundSql中就封装了我们的sql语句
+        BoundSql boundSql = ms.getBoundSql(parameter);
+        //创建 CacheKey 对象  就是要存放在一级缓存中的
+        CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
+        //调用 query （）的另一个重载，继续进行查询
+        return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
   }
 
   /*
@@ -155,39 +156,42 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
 
-    ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
-    if (closed) {
-      throw new ExecutorException("Executor was closed.");
-    }
-    if (queryStack == 0 && ms.isFlushCacheRequired()) {
-      clearLocalCache();
-    }
-    List<E> list;
-    try {
-      queryStack++;
-      //通过key到以及缓存中查询
-      list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
-      if (list != null) {
-        handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
-      } else {
-        //缓存中取不到则调用去数据库查询的方法    查询出来以后会把数据放到以及缓存中
-        list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
-      }
-    } finally {
-      queryStack--;
-    }
-    if (queryStack == 0) {
-      for (DeferredLoad deferredLoad : deferredLoads) {
-        deferredLoad.load();
-      }
-      // issue #601
-      deferredLoads.clear();
-      if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
-        // issue #482
-        clearLocalCache();
-      }
-    }
-    return list;
+        ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
+
+        // 判断执行器是不是关闭了 关闭就抛出异常
+        if (closed) {
+          throw new ExecutorException("Executor was closed.");
+        }
+        if (queryStack == 0 && ms.isFlushCacheRequired()) {
+          clearLocalCache();
+        }
+        List<E> list;
+        try {
+          queryStack++;
+          //通过key到一级缓存中查询
+          list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
+          if (list != null) {
+            // 从一级缓存中获取到则进行处理
+            handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
+          } else {
+            //从一级缓存中取不到则调用去数据库查询的方法    查询出来以后会把数据放到一级缓存中
+            list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
+          }
+        } finally {
+          queryStack--;
+        }
+        if (queryStack == 0) {
+          for (DeferredLoad deferredLoad : deferredLoads) {
+            deferredLoad.load();
+          }
+          // issue #601
+          deferredLoads.clear();
+          if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
+            // issue #482
+            clearLocalCache();
+          }
+        }
+        return list;
   }
 
   @Override
@@ -359,7 +363,7 @@ public abstract class BaseExecutor implements Executor {
   }
 
   /**
-   * 到数据库中查询  并把查询结果放到以及缓存中
+   * 到数据库中查询  并把查询结果放到一级缓存中
    *
    * @param ms
    * @param parameter
@@ -372,21 +376,25 @@ public abstract class BaseExecutor implements Executor {
    * @throws SQLException
    */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
-    List<E> list;
-    localCache.putObject(key, EXECUTION_PLACEHOLDER);
-    try {
-      //doQuery （）方法是一个抽象方法，也是上述 4 个基本方法之一，由 BaseExecutor 的子类具体实现
-      list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
-    } finally {
-      // 清掉缓存
-      localCache.removeObject(key);
-    }
-    // 放入缓存
-    localCache.putObject(key, list);
-    if (ms.getStatementType() == StatementType.CALLABLE) {
-      localOutputParameterCache.putObject(key, parameter);
-    }
-    return list;
+
+        List<E> list;
+        // 在缓存中 添加占位对象 此处的占位符和延迟加载有关
+        localCache.putObject(key, EXECUTION_PLACEHOLDER);
+        try {
+          //doQuery （）方法是一个抽象方法，也是上述 4 个基本方法之一，由 BaseExecutor 的子类具体实现
+          // 去数据库执行读操作
+          list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
+        } finally {
+          // 清掉缓存 移除占位对象
+          localCache.removeObject(key);
+        }
+        // 放入一级缓存
+        localCache.putObject(key, list);
+
+        if (ms.getStatementType() == StatementType.CALLABLE) {
+          localOutputParameterCache.putObject(key, parameter);
+        }
+        return list;
   }
 
   protected Connection getConnection(Log statementLog) throws SQLException {

@@ -96,10 +96,6 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
- * @author Clinton Begin
- */
-
-/**
  * 配置类 其实就是对应我们Mybatis的全局配置文件
  * 里面很多配置项
  */
@@ -108,7 +104,12 @@ public class Configuration {
   /** //mynote: MapperRegistry MapperRegisy 是 Mapper 接口及其对应的代理对象工厂的注册中心 */
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
 
-  //这个map是存放我们的sql语句对应的MappedStatement
+  /**
+   *
+   * 这个map是存放我们的sql语句对应的MappedStatement
+   * MappedStatement 映射
+   * KEY：'${namespace}.${id}'
+   */
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
     .conflictMessageProducer((savedValue, targetValue) ->
       ". please check " + savedValue.getResource() + " and " + targetValue.getResource());

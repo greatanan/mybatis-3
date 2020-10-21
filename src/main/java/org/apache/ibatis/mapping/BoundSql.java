@@ -34,19 +34,19 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  */
 public class BoundSql {
-/*在 BoundSql 中记录的 SQL 语句中可能包含“？”占位
-符，而每个 “？”占位符都对应了 BoundSql .parameterMappings 集合中的 一个元素，在该
-ParameterMapping 对象 中记录了对应 的参数名称以及该参数的相关属性。*/
-/*在 ParameterHandler 接口中只 定义了一个 setParameters（） 方法，该方法主要负责调用*
+  /*在 BoundSql 中记录的 SQL 语句中可能包含“？”占位
+  符，而每个 “？”占位符都对应了 BoundSql .parameterMappings 集合中的 一个元素，在该
+  ParameterMapping 对象 中记录了对应 的参数名称以及该参数的相关属性。*/
+  /*在 ParameterHandler 接口中只 定义了一个 setParameters（） 方法，该方法主要负责调用*
 
-PreparedStatement. set＊（）方法为 SQL 语句绑定实参。 MyBatis 只为 ParameterHandler 接口提供了
-唯一一个实现类，也就是本小节主要介绍的 DefaultParameterHandler
+  PreparedStatement. set＊（）方法为 SQL 语句绑定实参。 MyBatis 只为 ParameterHandler 接口提供了
+  唯一一个实现类，也就是本小节主要介绍的 DefaultParameterHandler
 
-在 DefaultParameterHandler.setParameters（）方法中会遍历 BoundSql.parameterMappings 集合
-中记录的 ParameterMapping 对象，井根据其中记录的参数名称查找相应实参 ， 然后与 SQL 语句
-绑定
-/
- */
+  在 DefaultParameterHandler.setParameters（）方法中会遍历 BoundSql.parameterMappings 集合
+  中记录的 ParameterMapping 对象，井根据其中记录的参数名称查找相应实参 ， 然后与 SQL 语句
+  绑定
+  /
+   */
   private final String sql;
 
   /** ，在 BoundSql 中记录的 SQL 语句中可能包含“？”占符，而每个 “？”占位符都对应了 BoundSql parameterMappings 集合中的 个元素，在该

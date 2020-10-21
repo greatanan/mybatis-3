@@ -46,18 +46,32 @@ public class TestFactory {
   @Test
   public void selectTest() {
 
-    SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
-    SqlSession sqlSession = sqlSessionFactory.openSession();
+        SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
+        SqlSession sqlSession = sqlSessionFactory.openSession();
 
-    PersonDao personDao = sqlSession.getMapper(PersonDao.class);
-    Person person = personDao.select(1L);
+        PersonDao personDao = sqlSession.getMapper(PersonDao.class);
+        // 代理对象调用接口中的任意方法 执行的都会动态代理中的invoke方法  MapperProxy中的invoke方法
+        Person person = personDao.select(1L);
 
-//    Person person = sqlSession.selectOne("com.mybatis.chen.dao.PersonDao.select", 5L);
-    System.out.println(person);
-    Person person2 = personDao.select(1L);
-    sqlSession.commit();
-    sqlSession.close();
+    //    Person person = sqlSession.selectOne("com.mybatis.chen.dao.PersonDao.select", 5L);
+        System.out.println(person);
+        //Person person2 = personDao.select(1L);
+        sqlSession.commit();
+        sqlSession.close();
   }
+
+  @Test
+  public void selectTest1() {
+
+        SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+
+        Person person = sqlSession.selectOne("com.mybatis.greatanan.dao.select", 5L);
+        System.out.println(person);
+        sqlSession.commit();
+        sqlSession.close();
+  }
+
 
 
   /**
@@ -66,12 +80,12 @@ public class TestFactory {
   @Test
   public void testFirstCache() {
 
-    SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
-    SqlSession sqlSession1 = sqlSessionFactory.openSession();
-    PersonDao personDao1 = sqlSession1.getMapper(PersonDao.class);
-    Person person1 = personDao1.select(1L);
-    Person person2 = personDao1.select(1L);
-    System.out.println(person1==person2);
+        SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
+        SqlSession sqlSession1 = sqlSessionFactory.openSession();
+        PersonDao personDao1 = sqlSession1.getMapper(PersonDao.class);
+        Person person1 = personDao1.select(1L);
+        // Person person2 = personDao1.select(1L);
+        // System.out.println(person1==person2);
 
   }
 
@@ -82,21 +96,21 @@ public class TestFactory {
   @Test
   public void testSecondCache() {
 
-    SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
-    SqlSession sqlSession1 = sqlSessionFactory.openSession();
-    SqlSession sqlSession2 = sqlSessionFactory.openSession();
-    PersonDao personDao1 = sqlSession1.getMapper(PersonDao.class);
-    PersonDao personDao2 =sqlSession2.getMapper(PersonDao.class);
+        SqlSessionFactory sqlSessionFactory = SqlSessionFactoryUtil.getSqlSessionFactory();
+        SqlSession sqlSession1 = sqlSessionFactory.openSession();
+        SqlSession sqlSession2 = sqlSessionFactory.openSession();
+        PersonDao personDao1 = sqlSession1.getMapper(PersonDao.class);
+        PersonDao personDao2 =sqlSession2.getMapper(PersonDao.class);
 
-    Person person1 = personDao1.select(1L);
-    // 清空一级缓存
-    sqlSession1.close();
-    Person person2 = personDao2.select(1L);
+        Person person1 = personDao1.select(1L);
+        // 清空一级缓存
+        sqlSession1.close();
+        Person person2 = personDao2.select(1L);
 
-    // 可以查看控制台打印的 Cache Hit Ratio缓存命中率
+        // 可以查看控制台打印的 Cache Hit Ratio缓存命中率
 
-    // 二级缓存的地址是不一样的 一级缓存的话对象就是一样的
-    System.out.println(personDao1==personDao2);
+        // 二级缓存的地址是不一样的 一级缓存的话对象就是一样的
+        System.out.println(personDao1==personDao2);
 
   }
 

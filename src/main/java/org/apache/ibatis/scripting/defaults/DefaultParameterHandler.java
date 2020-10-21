@@ -71,10 +71,14 @@ public class DefaultParameterHandler implements ParameterHandler {
    */
   @Override
   public void setParameters(PreparedStatement ps) {
+
     ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
+
     //取出 sql 中的参数映射列表
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+
     if (parameterMappings != null) {
+
       for (int i = 0; i < parameterMappings.size(); i++) {
         ParameterMapping parameterMapping = parameterMappings.get(i);
         //／过滤掉存储过程中的输出参数
@@ -94,13 +98,15 @@ public class DefaultParameterHandler implements ParameterHandler {
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }
-          //获取 ParameterMapping 中设置的 TypeHandler 对象
+
+          //获取 ParameterMapping 中设置的 TypeHandler 对象 TypeHandler的作用是jdbc type和java type之间做转换
           TypeHandler typeHandler = parameterMapping.getTypeHandler();
           JdbcType jdbcType = parameterMapping.getJdbcType();
           if (value == null && jdbcType == null) {
             jdbcType = configuration.getJdbcTypeForNull();
           }
           try {
+
             //通过 TypeHandler.setParametera （）方法会调用 PreparedStatement.set ＊（）方法为 SQL 语句绑定相应的实参
             typeHandler.setParameter(ps, i + 1, value, jdbcType);
             //SQL 吾句绑定完实参之后，就可以调用 Statement 对象相应的 execut方法，将 SQL语句交给数据库执行了

@@ -179,19 +179,24 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
   @Override
   public List<Object> handleResultSets(Statement stmt) throws SQLException {
+
     ErrorContext.instance().activity("handling results").object(mappedStatement.getId());
 
     final List<Object> multipleResults = new ArrayList<>();
 
     int resultSetCount = 0;
+
     ResultSetWrapper rsw = getFirstResultSet(stmt);
 
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
+
     int resultMapCount = resultMaps.size();
     validateResultMapsCount(rsw, resultMapCount);
     while (rsw != null && resultMapCount > resultSetCount) {
       ResultMap resultMap = resultMaps.get(resultSetCount);
+
       handleResultSet(rsw, resultMap, multipleResults, null);
+
       rsw = getNextResultSet(stmt);
       cleanUpAfterHandlingResultSet();
       resultSetCount++;
@@ -233,6 +238,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     return new DefaultCursor<>(this, resultMap, rsw, rowBounds);
   }
 
+  /**
+   * 将ResultSet对象 封装成 ResultSetWrapper 对象
+   * @param stmt
+   * @return
+   * @throws SQLException
+   */
   private ResultSetWrapper getFirstResultSet(Statement stmt) throws SQLException {
     ResultSet rs = stmt.getResultSet();
     while (rs == null) {
@@ -298,7 +309,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       } else {
         if (resultHandler == null) {
           DefaultResultHandler defaultResultHandler = new DefaultResultHandler(objectFactory);
+
           handleRowValues(rsw, resultMap, defaultResultHandler, rowBounds, null);
+
           multipleResults.add(defaultResultHandler.getResultList());
         } else {
           handleRowValues(rsw, resultMap, resultHandler, rowBounds, null);
